@@ -3,6 +3,7 @@
 
 CMakeFiles/StructureFromMotion.dir/SFM.cpp.o: SFM.cpp
 CMakeFiles/StructureFromMotion.dir/SFM.cpp.o: SFM/Image.hpp
+CMakeFiles/StructureFromMotion.dir/SFM.cpp.o: SFM/RANSAC/ransac.hpp
 CMakeFiles/StructureFromMotion.dir/SFM.cpp.o: /usr/local/include/opencv2/calib3d/calib3d.hpp
 CMakeFiles/StructureFromMotion.dir/SFM.cpp.o: /usr/local/include/opencv2/contrib/contrib.hpp
 CMakeFiles/StructureFromMotion.dir/SFM.cpp.o: /usr/local/include/opencv2/contrib/openfabmap.hpp

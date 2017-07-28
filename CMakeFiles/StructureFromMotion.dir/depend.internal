@@ -4,6 +4,7 @@
 CMakeFiles/StructureFromMotion.dir/SFM.cpp.o
  /home/roman/Diplomska/SFM/SFM.cpp
  /home/roman/Diplomska/SFM/SFM/Image.hpp
+ /home/roman/Diplomska/SFM/SFM/RANSAC/ransac.hpp
  /usr/local/include/opencv2/calib3d/calib3d.hpp
  /usr/local/include/opencv2/contrib/contrib.hpp
  /usr/local/include/opencv2/contrib/openfabmap.hpp

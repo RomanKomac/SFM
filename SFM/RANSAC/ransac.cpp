@@ -10,11 +10,10 @@
 using namespace std;
 using namespace cv;
 
+
 Mat Estimator::estFundamentalMat( _InputArray _points1, _InputArray _points2,
-                                int method, double param1, double param2,
-                                _OutputArray _matx ){
-	
-	
+                                int method, double param1 = 1, double param2 = 0.99, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
+		
 	//Get Matrices
 	Mat points1 = _points1.getMat(), points2 = _points2.getMat();
     Mat m1, m2, F;
@@ -71,17 +70,29 @@ Mat Estimator::estFundamentalMat( _InputArray _points1, _InputArray _points2,
         else
             result = createLMeDSPointSetRegistrator(cb, 7, param2)->run(m1, m2, F, _mask);
     }
+	
 	*/
 
+
+    if( _mask.needed() )
+    {
+        _mask.create(npoints, 1, CV_8U, -1, true);
+        Mat mask = _mask.getMat();
+        CV_Assert( (mask.cols == 1 || mask.rows == 1) && (int)mask.total() == npoints );
+        mask.setTo(Scalar::all(1));
+	}
+
+    // Result, returns 1 if successful
 	int result;
 
-    result = createFundMatEstimator(method, param1, param2)->run(m1, m2, F);
+    result = createFundMatEstimator(method, param1, param2, _mask, similarities)->run(m1, m2, F);
 
     if( result <= 0)
     	return Mat();
 
 	return F;
 }
+
 
 class RANSAC_Estimator : public FundMatEstimator{
 	public:
@@ -134,7 +145,7 @@ class ARRSAC_Estimator : public FundMatEstimator{
 		}
 };
 
-FundMatEstimator* Estimator::createFundMatEstimator(int method, double param1, double param2){
+FundMatEstimator* Estimator::createFundMatEstimator(int method, double param1, double param2, _OutputArray _mask, vector<float> similarities){
 	switch(method) {
 		case SFM_RANSAC :
 			return (new RANSAC_Estimator(param1, param2));

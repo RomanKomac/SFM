@@ -6,25 +6,25 @@
 
 #IncludeRegexTransform: 
 
-/home/roman/Diplomska/SFM/SFM.cpp
+/home/roman/Diplomska/SFM/SFM/RANSAC/ransac.cpp
 stdio.h
--
-algorithm
--
-iostream
 -
 opencv2/opencv.hpp
 -
-opencv2/highgui/highgui.hpp
+opencv2/core.hpp
 -
-opencv2/imgproc/imgproc.hpp
+string
 -
-opencv2/nonfree/features2d.hpp
+vector
 -
-SFM/Image.hpp
-/home/roman/Diplomska/SFM/SFM/Image.hpp
+dirent.h
+-
+fstream
+-
+ransac.hpp
+/home/roman/Diplomska/SFM/SFM/RANSAC/ransac.hpp
 
-/home/roman/Diplomska/SFM/SFM/Image.hpp
+/home/roman/Diplomska/SFM/SFM/RANSAC/ransac.hpp
 opencv2/opencv.hpp
 -
 string
@@ -75,6 +75,10 @@ opencv2/core/core.hpp
 /usr/local/include/opencv2/contrib/opencv2/core/core.hpp
 valarray
 -
+
+/usr/local/include/opencv2/core.hpp
+opencv2/core/core.hpp
+/usr/local/include/opencv2/opencv2/core/core.hpp
 
 /usr/local/include/opencv2/core/affine.hpp
 opencv2/core/core.hpp
@@ -219,10 +223,6 @@ string
 -
 iostream
 -
-
-/usr/local/include/opencv2/nonfree/features2d.hpp
-opencv2/features2d/features2d.hpp
-/usr/local/include/opencv2/nonfree/opencv2/features2d/features2d.hpp
 
 /usr/local/include/opencv2/objdetect/objdetect.hpp
 opencv2/core/core.hpp
