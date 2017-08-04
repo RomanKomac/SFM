@@ -116,17 +116,29 @@ void SFMPipeline(string path){
 	double confidence = 0.99;
 	Mat mask1;
 	Mat mask2;
-	Mat fund_mat = findFundamentalMat(points1, points2, FM_RANSAC, reprError, confidence, mask1);
+	Mat F;
+	//Mat fund_mat = findFundamentalMat(points1, points2, FM_RANSAC, reprError, confidence, mask1);
 
-	Mat F = Estimator::estFundamentalMat(points1, points2, SFM_RANSAC, reprError, confidence, mask2, similarities);
+	//cout << fund_mat << endl;
+	//cout << F << endl;
 
+	F = Estimator::estFundamentalMat(points1, points2, SFM_RANSAC, reprError, confidence, mask2, similarities);
+	cout << F << endl;
+
+	//int numm = countNonZero(mask2);
+	vector<Point2f> pointsbet1;
+	vector<Point2f> pointsbet2;
 
 	vector<DMatch> good_matches;
 	for(int l = 0; l < matches[0].size(); l++){
-		if(mask1.at<unsigned char>(l)){
+		if(mask2.at<unsigned char>(l)){
 			good_matches.push_back(matches[0][l]);
+			pointsbet1.push_back(points1[l]);
+			pointsbet2.push_back(points2[l]);
 		}
 	}
+
+
 
 	Mat img_matches;
 	drawMatches( imgs[0], keypoints[0], imgs[1], keypoints[1],
@@ -134,7 +146,7 @@ void SFMPipeline(string path){
                vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 
 
-	Size size(img_matches.cols/2, img_matches.rows/2);//the dst image size,e.g.100x100
+	Size size(img_matches.cols/2, img_matches.rows/2);
 	Mat dst;//dst image
 	resize(img_matches,dst,size);
   	//-- Show detected matches

@@ -5,10 +5,12 @@ CMakeFiles/StructureFromMotion.dir/SFM.cpp.o
  /home/roman/Diplomska/SFM/SFM.cpp
  /home/roman/Diplomska/SFM/SFM/Image.hpp
  /home/roman/Diplomska/SFM/SFM/RANSAC/ransac.hpp
+ /usr/local/include/opencv2/calib3d.hpp
  /usr/local/include/opencv2/calib3d/calib3d.hpp
  /usr/local/include/opencv2/contrib/contrib.hpp
  /usr/local/include/opencv2/contrib/openfabmap.hpp
  /usr/local/include/opencv2/contrib/retina.hpp
+ /usr/local/include/opencv2/core.hpp
  /usr/local/include/opencv2/core/affine.hpp
  /usr/local/include/opencv2/core/core.hpp
  /usr/local/include/opencv2/core/core_c.h
@@ -41,6 +43,7 @@ CMakeFiles/StructureFromMotion.dir/SFM/Image.cpp.o
 CMakeFiles/StructureFromMotion.dir/SFM/RANSAC/ransac.cpp.o
  /home/roman/Diplomska/SFM/SFM/RANSAC/ransac.cpp
  /home/roman/Diplomska/SFM/SFM/RANSAC/ransac.hpp
+ /usr/local/include/opencv2/calib3d.hpp
  /usr/local/include/opencv2/calib3d/calib3d.hpp
  /usr/local/include/opencv2/contrib/contrib.hpp
  /usr/local/include/opencv2/contrib/openfabmap.hpp
