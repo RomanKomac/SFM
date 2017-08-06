@@ -16,7 +16,7 @@
 using namespace std;
 using namespace cv;
 
-//DIrectly ported from opencv ptsetreg.cpp
+//Directly ported from opencv ptsetreg.cpp
 int Estimator::updateNumIters( double p, double ep, int modelPoints, int maxIters )
 {
 
@@ -37,7 +37,7 @@ int Estimator::updateNumIters( double p, double ep, int modelPoints, int maxIter
     return denom >= 0 || -num >= maxIters*(-denom) ? maxIters : cvRound(num/denom);
 }
 
-//Works perfectly
+//Directly ported from opencv
 int Estimator::getInliers(_InputArray _points1, _InputArray _points2, Mat _F, double err, _OutputArray _mask){
 
 	Mat __m1 = _points1.getMat(), __m2 = _points2.getMat();
@@ -79,7 +79,7 @@ int Estimator::getInliers(_InputArray _points1, _InputArray _points2, Mat _F, do
     return nInliers;
 }
 
-//Works perfectly
+//Directly ported from opencv
 int Estimator::fundMat(_InputArray _points1, _InputArray _points2, _OutputArray _F){
 
 	Mat _m1 = _points1.getMat(), _m2 = _points2.getMat();
@@ -174,7 +174,20 @@ void Estimator::debug(_InputArray _points1, _InputArray _points2, _OutputArray _
 }
 
 Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
+                                int method, double param1 = 1, double param2 = 0.99, _OutputArray _mask = _OutputArray()){
+	return Estimator::estFundamentalMat(_points1, _points2, method, param1, param2, INLIER_RATIO, _mask, vector<float>());
+}
+Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
                                 int method, double param1 = 1, double param2 = 0.99, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
+	return Estimator::estFundamentalMat(_points1, _points2, method, param1, param2, INLIER_RATIO, _mask, similarities);
+}
+Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
+                                int method, double param1 = 1, double param2 = 0.99, double param3 = INLIER_RATIO, _OutputArray _mask = _OutputArray()){
+	return Estimator::estFundamentalMat(_points1, _points2, method, param1, param2, param3, _mask, vector<float>());
+}
+
+Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
+                                int method, double param1 = 1, double param2 = 0.99, double param3 = INLIER_RATIO, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
 		
 	//Get Matrices
 	Mat points1 = _points1.getMat(), points2 = _points2.getMat();
@@ -211,7 +224,7 @@ Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
     // Result, returns number of inliers
 	int result = 0;
 
-    result = createFundMatEstimator(method, param1, param2)->run(m1, m2, F, _mask, similarities);
+    result = createFundMatEstimator(method, param1, param2, param3)->run(m1, m2, F, _mask, similarities);
     cout << result << endl;
 
     //IN case if inliers are lower than required
@@ -224,7 +237,7 @@ Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
 
 class RANSAC_Estimator : public FundMatEstimator{
 	public:
-		RANSAC_Estimator(double param1, double param2, double param3 = INLIER_RATIO){
+		RANSAC_Estimator(double param1, double param2, double param3){
 			reprojectError = param1;
 			confidence = param2;
 			inlier_ratio = param3;
@@ -348,10 +361,15 @@ class RANSAC_Estimator : public FundMatEstimator{
 };
 class PE_RANSAC_Estimator : public FundMatEstimator{
 	public:
-		PE_RANSAC_Estimator(double param1, double param2, double param3 = INLIER_RATIO){
+		PE_RANSAC_Estimator(double param1, double param2, double param3){
 			reprojectError = param1;
 			confidence = param2;
 			inlier_ratio = param3;
+			//Recommended values
+			//M = number of generated hypotheses
+			//B = number of points evaluated each time
+			M = 500;
+			B = 100;
 		}
 		int run(_InputArray _points1, _InputArray _points2, _OutputArray F, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
 
@@ -364,12 +382,16 @@ class PE_RANSAC_Estimator : public FundMatEstimator{
 };
 class PROSAC_Estimator : public FundMatEstimator{
 	public:
-		PROSAC_Estimator(double param1, double param2, double param3 = INLIER_RATIO){
+		PROSAC_Estimator(double param1, double param2, double param3){
 			reprojectError = param1;
 			confidence = param2;
 			inlier_ratio = param3;
 		}
 		int run(_InputArray _points1, _InputArray _points2, _OutputArray F, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
+			if(!similarities.size()){
+					cout << "similarity scores required to run SFM_PROSAC estimator" << endl;
+				CV_Assert( similarities.size() );
+			}
 
 			return 0;
 		}
@@ -380,7 +402,7 @@ class PROSAC_Estimator : public FundMatEstimator{
 };
 class MLESAC_Estimator : public FundMatEstimator{
 	public:
-		MLESAC_Estimator(double param1, double param2, double param3 = INLIER_RATIO){
+		MLESAC_Estimator(double param1, double param2, double param3){
 			reprojectError = param1;
 			confidence = param2;
 			inlier_ratio = param3;
@@ -396,7 +418,7 @@ class MLESAC_Estimator : public FundMatEstimator{
 };
 class ARRSAC_Estimator : public FundMatEstimator{
 	public:
-		ARRSAC_Estimator(double param1, double param2, double param3 = INLIER_RATIO){
+		ARRSAC_Estimator(double param1, double param2, double param3){
 			reprojectError = param1;
 			confidence = param2;
 			inlier_ratio = param3;
@@ -411,22 +433,57 @@ class ARRSAC_Estimator : public FundMatEstimator{
 		}
 };
 
-FundMatEstimator* Estimator::createFundMatEstimator(int method, double param1, double param2){
+class RANSAC_TddTest_Estimator : public FundMatEstimator{
+	public:
+		//Whether to use a priori known point similarity data
+		//If set to true, optional parameter similarities is required
+		bool useSimilarityScore;
+		RANSAC_TddTest_Estimator(double param1, double param2, double param3, bool simScore){
+			reprojectError = param1;
+			confidence = param2;
+			inlier_ratio = param3;
+			useSimilarityScore = simScore;
+			//Reccomended value
+			//D = number of extra points to take in the pre-verification
+			D = 1;
+		}
+		int run(_InputArray _points1, _InputArray _points2, _OutputArray F, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
+			if(useSimilarityScore){
+				if(!similarities.size())
+					cout << "similarity scores required to run SFM_RANSAC_Tdd_SScore estimator" << endl;
+				CV_Assert( similarities.size() );
+			}
+
+			return 0;
+		}
+	private:
+		void subselect(_InputArray _points1, _InputArray _points2, _OutputArray _ouput1, _OutputArray _output2, vector<float> similarities = vector<float>()){
+
+		}
+};
+
+FundMatEstimator* Estimator::createFundMatEstimator(int method, double param1, double param2, double param3 = INLIER_RATIO){
 	switch(method) {
 		case SFM_RANSAC :
-			return (new RANSAC_Estimator(param1, param2));
+			return (new RANSAC_Estimator(param1, param2, param3));
+			break;
+		case SFM_RANSAC_Tdd :
+			return (new RANSAC_TddTest_Estimator(param1, param2, param3, false));
+			break;
+		case SFM_RANSAC_Tdd_SScore :
+			return (new RANSAC_TddTest_Estimator(param1, param2, param3, true));
 			break;
 		case SFM_PE_RANSAC :
-			return (new PE_RANSAC_Estimator(param1, param2));
+			return (new PE_RANSAC_Estimator(param1, param2, param3));
 			break;
 		case SFM_PROSAC :
-			return (new PROSAC_Estimator(param1, param2));
+			return (new PROSAC_Estimator(param1, param2, param3));
 			break;
 		case SFM_MLESAC :
-			return (new MLESAC_Estimator(param1, param2));
+			return (new MLESAC_Estimator(param1, param2, param3));
 			break;
 		case SFM_ARRSAC :
-			return (new ARRSAC_Estimator(param1, param2));
+			return (new ARRSAC_Estimator(param1, param2, param3));
 			break;
 		default :
 			return NULL;
