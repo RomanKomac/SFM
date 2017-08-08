@@ -1,1 +1,0 @@
-/home/roman/Diplomska/SFM/CMakeFiles/StructureFromMotion.dir

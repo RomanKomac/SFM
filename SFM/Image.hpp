@@ -10,4 +10,5 @@ class Image
 
 	private:
 		static std::vector<cv::Mat> loadFF(std::string path, std::string reg_name);
+
 };

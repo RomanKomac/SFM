@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include "ransac.hpp"
+#include "../constants.hpp"
 
 //By default we set the inlier ratio to 50% (50% outlier contamination)
 #define INLIER_RATIO 0.5
@@ -215,7 +216,7 @@ Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
 
     CV_Assert( m1.checkVector(2) == m2.checkVector(2) );
 
-    cout << npoints << endl;
+    //cout << npoints << endl;
     _mask.create(npoints, 1, CV_8U, -1, true);
     Mat mask = _mask.getMat();
     CV_Assert( (mask.cols == 1 || mask.rows == 1) && (int)mask.total() == npoints );
@@ -225,7 +226,7 @@ Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
 	int result = 0;
 
     result = createFundMatEstimator(method, param1, param2, param3)->run(m1, m2, F, _mask, similarities);
-    cout << result << endl;
+    //cout << result << endl;
 
     //IN case if inliers are lower than required
     if( result < 8)
@@ -241,7 +242,6 @@ class RANSAC_Estimator : public FundMatEstimator{
 			reprojectError = param1;
 			confidence = param2;
 			inlier_ratio = param3;
-			//srand(time(0));
 		}
 		int run(_InputArray _points1, _InputArray _points2, _OutputArray _F, _OutputArray _mask = noArray(), vector<float> similarities = vector<float>()){
 
@@ -301,7 +301,7 @@ class RANSAC_Estimator : public FundMatEstimator{
 	                    swap(mask, bestMask1);
 	                    model_i.copyTo(bestModel);
 	                    maxGoodCount = goodCount;
-	                    niters = Estimator::updateNumIters( confidence, (double)(count - goodCount)/count, MODEL_POINTS, niters );
+	                    //niters = Estimator::updateNumIters( confidence, (double)(count - goodCount)/count, MODEL_POINTS, niters );
 	                }
 				}
 	            

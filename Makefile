@@ -111,30 +111,6 @@ StructureFromMotion/fast:
 	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/build
 .PHONY : StructureFromMotion/fast
 
-SFM.o: SFM.cpp.o
-.PHONY : SFM.o
-
-# target to build an object file
-SFM.cpp.o:
-	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM.cpp.o
-.PHONY : SFM.cpp.o
-
-SFM.i: SFM.cpp.i
-.PHONY : SFM.i
-
-# target to preprocess a source file
-SFM.cpp.i:
-	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM.cpp.i
-.PHONY : SFM.cpp.i
-
-SFM.s: SFM.cpp.s
-.PHONY : SFM.s
-
-# target to generate assembly for a file
-SFM.cpp.s:
-	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM.cpp.s
-.PHONY : SFM.cpp.s
-
 SFM/Image.o: SFM/Image.cpp.o
 .PHONY : SFM/Image.o
 
@@ -183,6 +159,54 @@ SFM/RANSAC/ransac.cpp.s:
 	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/RANSAC/ransac.cpp.s
 .PHONY : SFM/RANSAC/ransac.cpp.s
 
+SFM/SFM.o: SFM/SFM.cpp.o
+.PHONY : SFM/SFM.o
+
+# target to build an object file
+SFM/SFM.cpp.o:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/SFM.cpp.o
+.PHONY : SFM/SFM.cpp.o
+
+SFM/SFM.i: SFM/SFM.cpp.i
+.PHONY : SFM/SFM.i
+
+# target to preprocess a source file
+SFM/SFM.cpp.i:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/SFM.cpp.i
+.PHONY : SFM/SFM.cpp.i
+
+SFM/SFM.s: SFM/SFM.cpp.s
+.PHONY : SFM/SFM.s
+
+# target to generate assembly for a file
+SFM/SFM.cpp.s:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/SFM.cpp.s
+.PHONY : SFM/SFM.cpp.s
+
+tester.o: tester.cpp.o
+.PHONY : tester.o
+
+# target to build an object file
+tester.cpp.o:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/tester.cpp.o
+.PHONY : tester.cpp.o
+
+tester.i: tester.cpp.i
+.PHONY : tester.i
+
+# target to preprocess a source file
+tester.cpp.i:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/tester.cpp.i
+.PHONY : tester.cpp.i
+
+tester.s: tester.cpp.s
+.PHONY : tester.s
+
+# target to generate assembly for a file
+tester.cpp.s:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/tester.cpp.s
+.PHONY : tester.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -192,15 +216,18 @@ help:
 	@echo "... StructureFromMotion"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... SFM.o"
-	@echo "... SFM.i"
-	@echo "... SFM.s"
 	@echo "... SFM/Image.o"
 	@echo "... SFM/Image.i"
 	@echo "... SFM/Image.s"
 	@echo "... SFM/RANSAC/ransac.o"
 	@echo "... SFM/RANSAC/ransac.i"
 	@echo "... SFM/RANSAC/ransac.s"
+	@echo "... SFM/SFM.o"
+	@echo "... SFM/SFM.i"
+	@echo "... SFM/SFM.s"
+	@echo "... tester.o"
+	@echo "... tester.i"
+	@echo "... tester.s"
 .PHONY : help
 
 

@@ -19,6 +19,8 @@ bool match(string fname, vector<string> paths) {
 }
 
 
+
+
 vector<Mat> Image::loadFromFolder(string path){
 	return Image::loadFF(path, "");
 }
