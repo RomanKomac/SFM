@@ -135,30 +135,6 @@ SFM/Image.cpp.s:
 	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/Image.cpp.s
 .PHONY : SFM/Image.cpp.s
 
-SFM/RANSAC/ransac.o: SFM/RANSAC/ransac.cpp.o
-.PHONY : SFM/RANSAC/ransac.o
-
-# target to build an object file
-SFM/RANSAC/ransac.cpp.o:
-	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/RANSAC/ransac.cpp.o
-.PHONY : SFM/RANSAC/ransac.cpp.o
-
-SFM/RANSAC/ransac.i: SFM/RANSAC/ransac.cpp.i
-.PHONY : SFM/RANSAC/ransac.i
-
-# target to preprocess a source file
-SFM/RANSAC/ransac.cpp.i:
-	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/RANSAC/ransac.cpp.i
-.PHONY : SFM/RANSAC/ransac.cpp.i
-
-SFM/RANSAC/ransac.s: SFM/RANSAC/ransac.cpp.s
-.PHONY : SFM/RANSAC/ransac.s
-
-# target to generate assembly for a file
-SFM/RANSAC/ransac.cpp.s:
-	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/RANSAC/ransac.cpp.s
-.PHONY : SFM/RANSAC/ransac.cpp.s
-
 SFM/SFM.o: SFM/SFM.cpp.o
 .PHONY : SFM/SFM.o
 
@@ -182,6 +158,30 @@ SFM/SFM.s: SFM/SFM.cpp.s
 SFM/SFM.cpp.s:
 	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/SFM.cpp.s
 .PHONY : SFM/SFM.cpp.s
+
+SFM/estimator/ransac.o: SFM/estimator/ransac.cpp.o
+.PHONY : SFM/estimator/ransac.o
+
+# target to build an object file
+SFM/estimator/ransac.cpp.o:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/ransac.cpp.o
+.PHONY : SFM/estimator/ransac.cpp.o
+
+SFM/estimator/ransac.i: SFM/estimator/ransac.cpp.i
+.PHONY : SFM/estimator/ransac.i
+
+# target to preprocess a source file
+SFM/estimator/ransac.cpp.i:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/ransac.cpp.i
+.PHONY : SFM/estimator/ransac.cpp.i
+
+SFM/estimator/ransac.s: SFM/estimator/ransac.cpp.s
+.PHONY : SFM/estimator/ransac.s
+
+# target to generate assembly for a file
+SFM/estimator/ransac.cpp.s:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/ransac.cpp.s
+.PHONY : SFM/estimator/ransac.cpp.s
 
 tester.o: tester.cpp.o
 .PHONY : tester.o
@@ -219,12 +219,12 @@ help:
 	@echo "... SFM/Image.o"
 	@echo "... SFM/Image.i"
 	@echo "... SFM/Image.s"
-	@echo "... SFM/RANSAC/ransac.o"
-	@echo "... SFM/RANSAC/ransac.i"
-	@echo "... SFM/RANSAC/ransac.s"
 	@echo "... SFM/SFM.o"
 	@echo "... SFM/SFM.i"
 	@echo "... SFM/SFM.s"
+	@echo "... SFM/estimator/ransac.o"
+	@echo "... SFM/estimator/ransac.i"
+	@echo "... SFM/estimator/ransac.s"
 	@echo "... tester.o"
 	@echo "... tester.i"
 	@echo "... tester.s"

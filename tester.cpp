@@ -30,7 +30,6 @@ int main(int argc, char** argv )
 		cout << "Other arguments are currently optional" << endl;
 	}
 	
-
     return 0;
 }
 
@@ -74,7 +73,10 @@ void SFMPipeline(string path, string pattern){
 	// COnfidence of the model. 0.99 means 99% probability of it being correct.
 	double confidence = 0.999;
 
-	pipeline.RANSACfundamental(reprError, confidence, SFM_RANSAC);
+	pipeline.RANSACfundamental(reprError, confidence, SFM_PROSAC_Tdd);
+
+	cout << "Average number of iterations: " << pipeline.avg_num_iters << endl;
+	cout << "Average runtime: " << pipeline.avg_runtime << endl;
 
 	// Shows correspondences
 	#if defined VERBOSE

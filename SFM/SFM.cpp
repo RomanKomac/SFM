@@ -1,4 +1,4 @@
-#include "RANSAC/ransac.hpp"
+#include "estimator/ransac.hpp"
 #include "SFM.hpp"
 
 using namespace std;
@@ -53,6 +53,7 @@ void SFM::match(DescriptorMatcher &matcher){
 }
 
 void SFM::RANSACfundamental(double reprError, double confidence, int method){
+
 	for(int i = 0; i < matches.size(); i++){
 		vector<Point2f> points1;
 		vector<Point2f> points2;
@@ -66,12 +67,19 @@ void SFM::RANSACfundamental(double reprError, double confidence, int method){
 		Mat mask;
 		Mat F;
 
+		int num_iters = 0;
+		float runtime = 0;
+
 		F = Estimator::estFundamentalMat(points1, points2, method, reprError, confidence, mask, similarities);
 		fundMatrices.push_back(F);
 		masks.push_back(mask);
 		
+		avg_num_iters += Estimator::num_iters;
+		avg_runtime += Estimator::runtime;
 		//cout << F << endl;
 	}
+	avg_num_iters /= matches.size();
+	avg_runtime /= matches.size();
 }
 
 void SFM::showCorrespondences(){

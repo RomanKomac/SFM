@@ -5,8 +5,8 @@ find_package( OpenCV REQUIRED )
 
 add_definitions(-D VERBOSE)
 
-set( HEADER_FILES SFM/Image.hpp SFM/SFM.hpp SFM/RANSAC/ransac.hpp SFM/ )
-set( EXECUTABLE_FILES SFM/Image.cpp SFM/SFM.cpp SFM/RANSAC/ransac.cpp )
+set( HEADER_FILES SFM/Image.hpp SFM/SFM.hpp SFM/estimator/ransac.hpp SFM/ )
+set( EXECUTABLE_FILES SFM/Image.cpp SFM/SFM.cpp SFM/estimator/ransac.cpp )
 
 add_executable( StructureFromMotion ${EXECUTABLE_FILES} ${HEADER_FILES} tester.cpp )
 target_link_libraries( StructureFromMotion ${OpenCV_LIBS} )

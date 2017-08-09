@@ -12,6 +12,8 @@ class SFM
 		void match(cv::DescriptorMatcher &matcher);
 		void RANSACfundamental(double reprError, double confidence, int method);
 		void showCorrespondences();
+		int avg_num_iters;
+		float avg_runtime;
 	private:
 		static bool sortMatches(cv::DMatch m1, cv::DMatch m2){
 			return m1.distance < m2.distance;
