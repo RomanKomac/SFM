@@ -31,6 +31,14 @@ void SFM::extract(DescriptorExtractor &extractor){
 	}
 }
 
+void SFM::extract(FREAK &extractor){
+	for(int i = 0; i < GRAY_imgs.size(); i++){
+		Mat desc;
+		extractor.compute(GRAY_imgs[i], keypoints[i], desc);
+		descriptors.push_back(desc);
+	}
+}
+
 void SFM::match(DescriptorMatcher &matcher){
 	// Rule of thumb proposed in Lowe's paper
 	// If the (strength_first_match < ratio*strength_second_match) then keep
@@ -53,6 +61,11 @@ void SFM::match(DescriptorMatcher &matcher){
 }
 
 void SFM::RANSACfundamental(double reprError, double confidence, int method){
+	fundMatrices = vector<Mat>();
+	masks = vector<Mat>();
+
+	avg_num_iters = 0;
+	avg_runtime = 0;
 
 	for(int i = 0; i < matches.size(); i++){
 		vector<Point2f> points1;
@@ -66,9 +79,6 @@ void SFM::RANSACfundamental(double reprError, double confidence, int method){
 		
 		Mat mask;
 		Mat F;
-
-		int num_iters = 0;
-		float runtime = 0;
 
 		F = Estimator::estFundamentalMat(points1, points2, method, reprError, confidence, mask, similarities);
 		fundMatrices.push_back(F);

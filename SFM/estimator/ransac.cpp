@@ -19,6 +19,48 @@ using namespace cv;
 
 int Estimator::num_iters = 0;
 float Estimator::runtime = 0;
+vector<int> Estimator::pool = vector<int>();
+
+static bool sortPairs(pair< Mat,int > p1, pair< Mat,int > p2){
+	return p1.second > p2.second;
+}
+
+void Estimator::subselect(_InputArray _points1, _InputArray _points2, _OutputArray _output1, _OutputArray _output2, int len, int limit = 0){
+	Mat points1 = _points1.getMat(), points2 = _points2.getMat();
+	int d1 = points1.channels() > 1 ? points1.channels() : points1.cols;
+	bool multichan = points1.channels() > 1;
+	int count = points1.checkVector(d1), count2 = points1.checkVector(d1);
+
+	CV_Assert( points1.type() == points2.type() );
+	CV_Assert( count == count2 );
+
+	if(limit <= 0)
+		limit = count;
+
+	if(multichan){
+		_output1.create(len, 1, points1.type());
+		_output2.create(len, 1, points2.type());
+	} else {
+		_output1.create(len, 2, points1.type());
+		_output2.create(len, 2, points2.type());
+	}
+
+	Mat output1 = _output1.getMat();
+	Mat output2 = _output2.getMat();
+
+	if(Estimator::pool.size() != count){
+		Estimator::pool = vector<int>(count);
+		for (int i=0; i<count; i++) Estimator::pool[i] = i;
+	}
+
+	random_shuffle(Estimator::pool.begin(), Estimator::pool.begin()+limit);
+	
+	for(int j=0; j<len; j++){
+		points1.row(Estimator::pool[j]).copyTo(output1.row(j));
+		points2.row(Estimator::pool[j]).copyTo(output2.row(j));
+	}
+
+}
 
 //Directly ported from opencv ptsetreg.cpp
 int Estimator::updateNumIters( double p, double ep, int modelPoints, int maxIters )
@@ -245,8 +287,8 @@ Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
 
     FundMatEstimator* fme = createFundMatEstimator(method, param1, param2, param3);
     fme->run(m1, m2, F, _mask, similarities);
-    num_iters = fme->lastNumOfIterations();
-    runtime = fme->lastRuntime();
+    Estimator::num_iters = fme->lastNumOfIterations();
+    Estimator::runtime = fme->lastRuntime();
     //cout << result << endl;
 
     //IN case if inliers are lower than required
@@ -311,7 +353,7 @@ class RANSAC_Estimator : public FundMatEstimator{
 	        	//For benchmarking
 	        	num_iters++;
 
-	        	subselect(points1, points2, subselect1, subselect2);
+	        	Estimator::subselect(points1, points2, subselect1, subselect2, MIN_MODEL_POINTS);
 	            int i, nmodels;
 
                 nmodels = Estimator::fundMat(subselect1, subselect2, model, true);
@@ -323,7 +365,7 @@ class RANSAC_Estimator : public FundMatEstimator{
 	            for( i = 0; i < nmodels; i++ )
 	            {
 	                Mat model_i = model.rowRange( i*modelSize.height, (i+1)*modelSize.height );
-	                int goodCount = Estimator::getInliers( points1, points2, model, reprojectError, mask );
+	                int goodCount = Estimator::getInliers( points1, points2, model_i, reprojectError, mask );
 
 	                if( goodCount > max(maxGoodCount, MIN_MODEL_POINTS-1) )
 	                {
@@ -355,38 +397,6 @@ class RANSAC_Estimator : public FundMatEstimator{
 			return maxGoodCount;
 
 		}
-	private:
-		void subselect(_InputArray _points1, _InputArray _points2, _OutputArray _output1, _OutputArray _output2, vector<float> similarities = vector<float>()){
-			
-			Mat points1 = _points1.getMat(), points2 = _points2.getMat();
-			int d1 = points1.channels() > 1 ? points1.channels() : points1.cols;
-			bool multichan = points1.channels() > 1;
-			int count = points1.checkVector(d1);
-
-			CV_Assert( points1.type() == points2.type() );
-
-			if(multichan){
-				_output1.create(MIN_MODEL_POINTS, 1, points1.type());
-				_output2.create(MIN_MODEL_POINTS, 1, points2.type());
-			} else {
-				_output1.create(MIN_MODEL_POINTS, 2, points1.type());
-				_output2.create(MIN_MODEL_POINTS, 2, points2.type());
-			}
-
-			Mat output1 = _output1.getMat();
-			Mat output2 = _output2.getMat();
-
-			if(selection.size() != count){
-				selection = vector<int>();
-				for (int i=0; i<count; i++) selection.push_back(i);
-			}
-
-			random_shuffle(selection.begin(), selection.end());
-			for(int j=0; j<MIN_MODEL_POINTS; j++){
-				points1.row(selection[j]).copyTo(output1.row(j));
-				points2.row(selection[j]).copyTo(output2.row(j));
-			}
-		}
 };
 class PE_RANSAC_Estimator : public FundMatEstimator{
 	public:
@@ -400,16 +410,79 @@ class PE_RANSAC_Estimator : public FundMatEstimator{
 			M = 500;
 			B = 100;
 		}
-		int run(_InputArray _points1, _InputArray _points2, _OutputArray F, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
+		int run(_InputArray _points1, _InputArray _points2, _OutputArray _F, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
 
 			//Reset number of iterations and runtime
 			num_iters = 0;
 			loop_runtime = 0;
-			return 0;
-		}
-	private:
-		void subselect(_InputArray _points1, _InputArray _points2, _OutputArray _output1, _OutputArray _output2, vector<float> similarities = vector<float>()){
 
+			Mat points1 = _points1.getMat(), points2 = _points2.getMat();
+			Mat mask, model, bestModel, subselect1, subselect2, bestMask1, bestMask2, subtest1, subtest2;
+
+	        //Number of iterations set according to the standard termination criterion
+	        int iter, niters = (int)ceil(log(1 - confidence)/log(1 - pow(inlier_ratio,8)));
+	        int d1 = points1.channels() > 1 ? points1.channels() : points1.cols;
+	        int d2 = points2.channels() > 1 ? points2.channels() : points2.cols;
+	        int count = points1.checkVector(d1), count2 = points2.checkVector(d2), maxGoodCount = 0;
+
+	        CV_Assert( confidence > 0 && confidence < 1 );
+	        CV_Assert( count >= 0 && count2 == count );
+	        if( count < MIN_MODEL_POINTS )
+	            return 0;
+
+	        B = (count < B)? count : B;
+
+	        if( count == MIN_MODEL_POINTS )
+	        {
+	            Estimator::fundMat(points1, points2, bestModel, true);
+	            bestModel.copyTo(_F);
+	            bestMask1.setTo(Scalar::all(1));
+	            return MIN_MODEL_POINTS;
+	        }
+
+	        clock_t t1,t2;
+		    t1=clock();
+
+			//Number of hypotheses yet to evaluate
+			int nhypotheses = M;
+			//Generate M initial hypotheses
+			vector< pair< Mat,int > > hypotheses(nhypotheses);
+			for(int j = 0; j < nhypotheses; j++){
+				Estimator::subselect(points1, points2, subselect1, subselect2, MIN_MODEL_POINTS);
+				if(Estimator::fundMat(subselect1, subselect2, model, true) > 0){
+					hypotheses[j] = pair< Mat,int >(model.clone(),0);
+				} else {
+					j--;
+				}
+			}
+			
+
+			int i = 0;
+			while(nhypotheses > 1){
+				Estimator::subselect(points1, points2, subtest1, subtest2, B);
+			 	for(int j = 0; j < nhypotheses; j++){
+			 		num_iters++;
+			 		hypotheses[j].second = Estimator::getInliers(subtest1, subtest2, hypotheses[j].first, reprojectError);
+			 	}
+
+			 	std::sort(hypotheses.begin(), hypotheses.begin()+nhypotheses, sortPairs);
+
+			 	i++;
+				nhypotheses = (int)floor(M * pow(2.,-i));
+			}
+
+			t2=clock();
+		    loop_runtime = ((float)t2-(float)t1)/CLOCKS_PER_SEC;
+
+		    hypotheses[0].first.copyTo(_F);
+
+		    int finalCount = 0;
+		    if(_mask.needed())
+				finalCount = Estimator::getInliers(points1, points2, hypotheses[0].first, reprojectError, _mask);
+			else
+				finalCount = Estimator::getInliers(points1, points2, hypotheses[0].first, reprojectError);
+
+			return finalCount;
 		}
 };
 class PROSAC_Estimator : public FundMatEstimator{
@@ -479,7 +552,19 @@ class PROSAC_Estimator : public FundMatEstimator{
 	        	//For benchmarking
 	        	num_iters++;
 
-	        	subselect(points1, points2, subselect1, subselect2);
+	        	currIter++;
+				if (currIter >= stageIters && stageN < count) {
+					stageN++;
+
+					double Tn1 = Tn * (double)(stageN+1) / (stageN+1-MIN_MODEL_POINTS);
+					double stageIts = Tn1 - Tn;
+					stageIters = (int)ceil(stageIts);
+					currIter = 0;
+					Tn = Tn1;
+				}
+
+	        	Estimator::subselect(points1, points2, subselect1, subselect2, MIN_MODEL_POINTS, stageN);
+
 	            int i, nmodels;
 
                 nmodels = Estimator::fundMat(subselect1, subselect2, model, false); 
@@ -492,7 +577,7 @@ class PROSAC_Estimator : public FundMatEstimator{
 	            {
 	                Mat model_i = model.rowRange( i*modelSize.height, (i+1)*modelSize.height );
 
-	                int goodCount = Estimator::getInliers( points1, points2, model, reprojectError, mask );
+	                int goodCount = Estimator::getInliers( points1, points2, model_i, reprojectError, mask );
 
 	                if( goodCount > max(maxGoodCount, MIN_MODEL_POINTS-1) )
 	                {
@@ -522,8 +607,6 @@ class PROSAC_Estimator : public FundMatEstimator{
 	            _F.release();
 
 			return maxGoodCount;
-
-			return 0;
 		}
 	private:
 		//Max number of samples drawn
@@ -533,88 +616,140 @@ class PROSAC_Estimator : public FundMatEstimator{
 		int currIter;
 		//Current stage number of sample points
 		int stageN;
+};
+class LO_RANSAC_Estimator : public FundMatEstimator{
+	public:
+		LO_RANSAC_Estimator(double param1, double param2, double param3){
+			reprojectError = param1;
+			confidence = param2;
+			inlier_ratio = param3;
+			INNER_LOOP = 30;
+		}
+		int run(_InputArray _points1, _InputArray _points2, _OutputArray _F, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
 
-		void subselect(_InputArray _points1, _InputArray _points2, _OutputArray _output1, _OutputArray _output2, vector<float> similarities = vector<float>()){
+			//Reset number of iterations and runtime
+			num_iters = 0;
+			loop_runtime = 0;
+
 			Mat points1 = _points1.getMat(), points2 = _points2.getMat();
-			int d1 = points1.channels() > 1 ? points1.channels() : points1.cols;
-			bool multichan = points1.channels() > 1;
-			int count = points1.checkVector(d1);
+			Mat mask, model, bestModel, subselect1, subselect2, bestMask1, bestMask2, subtest1, subtest2;
 
-			CV_Assert( points1.type() == points2.type() );
+	        //Number of iterations set according to the standard termination criterion
+	        int iter, niters = (int)ceil(log(1 - confidence)/log(1 - pow(inlier_ratio,8)));
+	        int d1 = points1.channels() > 1 ? points1.channels() : points1.cols;
+	        int d2 = points2.channels() > 1 ? points2.channels() : points2.cols;
+	        int count = points1.checkVector(d1), count2 = points2.checkVector(d2), maxGoodCount = 0;
 
-			if(multichan){
-				_output1.create(MIN_MODEL_POINTS, 1, points1.type());
-				_output2.create(MIN_MODEL_POINTS, 1, points2.type());
-			} else {
-				_output1.create(MIN_MODEL_POINTS, 2, points1.type());
-				_output2.create(MIN_MODEL_POINTS, 2, points2.type());
-			}
+	        CV_Assert( confidence > 0 && confidence < 1 );
+	        CV_Assert( count >= 0 && count2 == count );
+	        if( count < MIN_MODEL_POINTS )
+	            return 0;
 
-			Mat output1 = _output1.getMat();
-			Mat output2 = _output2.getMat();
+	        if( _mask.needed() )
+	        {
+	            _mask.create(count, 1, CV_8U, -1, true);
+	            bestMask2 = bestMask1 = _mask.getMat();
+	            CV_Assert( (bestMask1.cols == 1 || bestMask1.rows == 1) && (int)bestMask1.total() == count );
+	        }
+	        else
+	        {
+	            bestMask1.create(count, 1, CV_8U);
+	            bestMask2 = bestMask1;
+	        }
 
-			if(selection.size() != count){
-				selection = vector<int>();
-				for (int i=0; i<count; i++) selection.push_back(i);
-			}
+	        if( count == MIN_MODEL_POINTS )
+	        {
+	            Estimator::fundMat(points1, points2, bestModel, true);
+	            bestModel.copyTo(_F);
+	            bestMask1.setTo(Scalar::all(1));
+	            return MIN_MODEL_POINTS;
+	        }
 
-			currIter++;
+	        bool multichan = points1.channels() > 1;
 
-			if (currIter >= stageIters && stageN < count) {
-				stageN++;
+	        clock_t t1,t2;
+		    t1=clock();
+	        for( iter = 0; iter < niters; iter++ )
+	        {
+	        	//For benchmarking
+	        	num_iters++;
 
-				double Tn1 = Tn * (double)(stageN+1) / (stageN+1-MIN_MODEL_POINTS);
-				double stageIts = Tn1 - Tn;
-				stageIters = (int)ceil(stageIts);
-				currIter = 0;
-				Tn = Tn1;
-			}
+	        	Estimator::subselect(points1, points2, subselect1, subselect2, MIN_MODEL_POINTS);
+	            int i, nmodels;
 
+                nmodels = Estimator::fundMat(subselect1, subselect2, model, true);
+	            if( nmodels <= 0 )
+	                continue;
+	            CV_Assert( model.rows % nmodels == 0 );
+	            Size modelSize(model.cols, model.rows/nmodels);
 
-			random_shuffle(selection.begin(), selection.begin()+stageN);
-			for(int j=0; j < MIN_MODEL_POINTS; j++){
-				points1.row(selection[j]).copyTo(output1.row(j));
-				points2.row(selection[j]).copyTo(output2.row(j));
-			}
-		}
-};
-class MLESAC_Estimator : public FundMatEstimator{
-	public:
-		MLESAC_Estimator(double param1, double param2, double param3){
-			reprojectError = param1;
-			confidence = param2;
-			inlier_ratio = param3;
-		}
-		int run(_InputArray _points1, _InputArray _points2, _OutputArray F, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
+	            for( i = 0; i < nmodels; i++ )
+	            {
+	                Mat model_i = model.rowRange( i*modelSize.height, (i+1)*modelSize.height );
+	                int goodCount = Estimator::getInliers( points1, points2, model_i, reprojectError, mask );
 
-			//Reset number of iterations and runtime
-			num_iters = 0;
-			loop_runtime = 0;
+	                if( goodCount > max(maxGoodCount, MIN_MODEL_POINTS-1) )
+	                {
+	                    swap(mask, bestMask1);
+	                    model_i.copyTo(bestModel);
+	                    maxGoodCount = goodCount;
+
+	                    if(multichan){
+							subtest1.create(maxGoodCount, 1, points1.type());
+							subtest2.create(maxGoodCount, 1, points2.type());
+						} else {
+							subtest1.create(maxGoodCount, 2, points1.type());
+							subtest2.create(maxGoodCount, 2, points2.type());
+						}
+						int h = 0;
+						for(int k = 0; k < count && h < maxGoodCount; k++){
+							if(bestMask1.at<uchar>(k)){
+								points1.row(k).copyTo(subtest1.row(h));
+								points2.row(k).copyTo(subtest2.row(h));
+								h++;
+							}
+						}
+	                    for(int j = 0; j < INNER_LOOP; j++){
+	                    	Estimator::subselect(subtest1, subtest2, subselect1, subselect2, MIN_MODEL_POINTS);
+	                    	int n2models = Estimator::fundMat(subselect1, subselect2, model, true);
+	                    	CV_Assert( model.rows % n2models == 0 );
+	            			Size model2Size(model.cols, model.rows/n2models);
+	            			for(int l = 0; l < n2models; l++ ){
+	            				Mat model_l = model.rowRange( i*model2Size.height, (i+1)*model2Size.height );
+	            				int betterCount = Estimator::getInliers( points1, points2, model_l, reprojectError, mask );
+	            				if( betterCount > max(maxGoodCount, MIN_MODEL_POINTS-1) ){
+	            					swap(mask, bestMask1);
+	            					model_l.copyTo(bestModel);
+	                    			maxGoodCount = betterCount;
+	            				}
+	            			}
+
+	                    }
+	                    niters = Estimator::updateNumIters( confidence, (double)(count - maxGoodCount)/count, MIN_MODEL_POINTS, niters );
+	                }
+				}
+	            
+	        }
+	        t2=clock();
+		    loop_runtime = ((float)t2-(float)t1)/CLOCKS_PER_SEC;
+
+	        if( maxGoodCount > 0 )
+	        {
+	            if( bestMask1.data != bestMask2.data )
+	            {
+	                if( bestMask1.size() == bestMask2.size() )
+	                    bestMask1.copyTo(bestMask2);
+	                else
+	                    transpose(bestMask1, bestMask2);
+	            }
+	            bestModel.copyTo(_F);
+	        }
+	        else
+	            _F.release();
+
+			return maxGoodCount;
+
 			return 0;
-		}
-	private:
-		void subselect(_InputArray _points1, _InputArray _points2, _OutputArray _output1, _OutputArray _output2, vector<float> similarities = vector<float>()){
-
-		}
-};
-class ARRSAC_Estimator : public FundMatEstimator{
-	public:
-		ARRSAC_Estimator(double param1, double param2, double param3){
-			reprojectError = param1;
-			confidence = param2;
-			inlier_ratio = param3;
-		}
-		int run(_InputArray _points1, _InputArray _points2, _OutputArray F, _OutputArray _mask = _OutputArray(), vector<float> similarities = vector<float>()){
-
-			//Reset number of iterations and runtime
-			num_iters = 0;
-			loop_runtime = 0;
-
-			return 0;
-		}
-	private:
-		void subselect(_InputArray _points1, _InputArray _points2, _OutputArray _output1, _OutputArray _output2, vector<float> similarities = vector<float>()){
-
 		}
 };
 
@@ -695,7 +830,22 @@ class TddTest_Estimator : public FundMatEstimator{
 	        	//For benchmarking
 	        	num_iters++;
 
-	        	subselect(points1, points2, subselect1, subselect2);
+	        	if(useSimilarityScore){
+					currIter++;
+
+					if (currIter >= stageIters && stageN < count) {
+						stageN++;
+						double Tn1 = Tn * (double)(stageN+1) / (stageN+1-MIN_MODEL_POINTS);
+						double stageIts = Tn1 - Tn;
+						stageIters = (int)ceil(stageIts);
+						currIter = 0;
+						Tn = Tn1;
+					}
+					Estimator::subselect(points1, points2, subselect1, subselect2, MIN_MODEL_POINTS+D, stageN);
+				} else {
+					Estimator::subselect(points1, points2, subselect1, subselect2, MIN_MODEL_POINTS+D);
+				}
+	        	
 	            int i, nmodels;
 
                 nmodels = Estimator::fundMat(subselect1, subselect2, model, false); 
@@ -707,8 +857,9 @@ class TddTest_Estimator : public FundMatEstimator{
 	            for( i = 0; i < nmodels; i++ )
 	            {
 	                Mat model_i = model.rowRange( i*modelSize.height, (i+1)*modelSize.height );
-	                if(Estimator::getInliers( subselect1, subselect2, model, reprojectError) == (MIN_MODEL_POINTS+D)){
-		                int goodCount = Estimator::getInliers( points1, points2, model, reprojectError, mask );
+	                if( (D == 1 && Estimator::getInliers( subselect1.row(MIN_MODEL_POINTS), subselect2.row(MIN_MODEL_POINTS), model_i, reprojectError) > 0) ||
+	                	(D > 1 && Estimator::getInliers( subselect1, subselect2, model_i, reprojectError) == MIN_MODEL_POINTS+D)){
+		                int goodCount = Estimator::getInliers( points1, points2, model_i, reprojectError, mask );
 
 		                if( goodCount > max(maxGoodCount, MIN_MODEL_POINTS-1) )
 		                {
@@ -749,52 +900,6 @@ class TddTest_Estimator : public FundMatEstimator{
 		int currIter;
 		//Current stage number of sample points
 		int stageN;
-		void subselect(_InputArray _points1, _InputArray _points2, _OutputArray _output1, _OutputArray _output2, vector<float> similarities = vector<float>()){
-			Mat points1 = _points1.getMat(), points2 = _points2.getMat();
-			int d1 = points1.channels() > 1 ? points1.channels() : points1.cols;
-			bool multichan = points1.channels() > 1;
-			int count = points1.checkVector(d1);
-
-			CV_Assert( points1.type() == points2.type() );
-
-			if(multichan){
-				_output1.create(MIN_MODEL_POINTS+D, 1, points1.type());
-				_output2.create(MIN_MODEL_POINTS+D, 1, points2.type());
-			} else {
-				_output1.create(MIN_MODEL_POINTS+D, 2, points1.type());
-				_output2.create(MIN_MODEL_POINTS+D, 2, points2.type());
-			}
-
-			Mat output1 = _output1.getMat();
-			Mat output2 = _output2.getMat();
-
-			if(selection.size() != count){
-				selection = vector<int>();
-				for (int i=0; i<count; i++) selection.push_back(i);
-			}
-
-			if(useSimilarityScore){
-				currIter++;
-
-				if (currIter >= stageIters && stageN < count) {
-					stageN++;
-					double Tn1 = Tn * (double)(stageN+1) / (stageN+1-MIN_MODEL_POINTS);
-					double stageIts = Tn1 - Tn;
-					stageIters = (int)ceil(stageIts);
-					currIter = 0;
-					Tn = Tn1;
-				}
-
-				random_shuffle(selection.begin(), selection.begin()+stageN);
-			} else {
-				random_shuffle(selection.begin(), selection.end());
-			}
-			for(int j=0; j<MIN_MODEL_POINTS+D; j++){
-				points1.row(selection[j]).copyTo(output1.row(j));
-				points2.row(selection[j]).copyTo(output2.row(j));
-			}
-
-		}
 };
 
 FundMatEstimator* Estimator::createFundMatEstimator(int method, double param1, double param2, double param3 = INLIER_RATIO){
@@ -814,11 +919,8 @@ FundMatEstimator* Estimator::createFundMatEstimator(int method, double param1, d
 		case SFM_PROSAC :
 			return (new PROSAC_Estimator(param1, param2, param3));
 			break;
-		case SFM_MLESAC :
-			return (new MLESAC_Estimator(param1, param2, param3));
-			break;
-		case SFM_ARRSAC :
-			return (new ARRSAC_Estimator(param1, param2, param3));
+		case SFM_LO_RANSAC :
+			return (new LO_RANSAC_Estimator(param1, param2, param3));
 			break;
 		default :
 			return NULL;

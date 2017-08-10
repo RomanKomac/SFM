@@ -47,9 +47,8 @@ void SFMPipeline(string path, string pattern){
 	cout << "Detecting and extracting keypoints" << endl;
 	#endif	
 	
-	SiftFeatureDetector detector;
-	SiftDescriptorExtractor extractor;
-	//DescriptorExtractor extractor = new ;
+	SurfFeatureDetector detector;
+	SurfDescriptorExtractor extractor;
 
 	pipeline.detect(detector);
 	pipeline.extract(extractor);
@@ -73,7 +72,7 @@ void SFMPipeline(string path, string pattern){
 	// COnfidence of the model. 0.99 means 99% probability of it being correct.
 	double confidence = 0.999;
 
-	pipeline.RANSACfundamental(reprError, confidence, SFM_PROSAC_Tdd);
+	pipeline.RANSACfundamental(reprError, confidence, SFM_LO_RANSAC);
 
 	cout << "Average number of iterations: " << pipeline.avg_num_iters << endl;
 	cout << "Average runtime: " << pipeline.avg_runtime << endl;

@@ -9,6 +9,7 @@ class SFM
 		SFM(std::vector<cv::Mat> images);
 		void detect(cv::FeatureDetector &detector);
 		void extract(cv::DescriptorExtractor &extractor);
+		void extract(cv::FREAK &extractor);
 		void match(cv::DescriptorMatcher &matcher);
 		void RANSACfundamental(double reprError, double confidence, int method);
 		void showCorrespondences();

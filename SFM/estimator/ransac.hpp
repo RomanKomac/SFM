@@ -16,12 +16,11 @@ class FundMatEstimator
 		int num_iters;
 		float loop_runtime;
 		std::vector<int> selection;
-		virtual void subselect(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray _output1, cv::_OutputArray _output2, std::vector<float> similarities) = 0;
 	public:
 		virtual int run(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray F, cv::_OutputArray _mask, std::vector<float> similarities) = 0;
 		virtual int lastNumOfIterations(){return num_iters;};
 		virtual float lastRuntime(){return loop_runtime;};
-		int M, B, D;
+		int M, B, D, INNER_LOOP;
 };
 
 class Estimator
@@ -29,6 +28,7 @@ class Estimator
 	public:
 		static int num_iters;
 		static float runtime;
+		static std::vector<int> pool;
 		static cv::Mat estFundamentalMat( cv::_InputArray _points1, cv::_InputArray _points2,
                                 int method, double param1, double param2, double param3,
                                 cv::_OutputArray _mask, std::vector<float> similarities);
@@ -47,4 +47,5 @@ class Estimator
 		static bool essenMat(cv::_InputArray _F, cv::_OutputArray _E);
 		static void debug(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray _F);
 		static int updateNumIters(double p, double ep, int modelPoints, int maxIters);
+		static void subselect(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray _output1, cv::_OutputArray _output2, int len, int limit);
 };
