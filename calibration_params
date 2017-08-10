@@ -1,0 +1,27 @@
+%BW
+%focal length
+fc_left = [2899.3 2890.0]
+fc_left_error = [0.57222 0.59509]
+%principal point
+cc_left = [783.96 666.45]
+cc_left_error = [1.8720 1.5899]
+%skew
+alpha_c_left = [0] 
+alpha_c_left_error = [0]
+%distortion
+kc_left = [-0.09878 -0.11484 0.00138 -0.00005 0.00000]
+kc_left_error = [0.003254 0.031455 0.000133 0.000201 0.000000]
+
+%COLOR
+%focal length
+fc_right = [2892.3 2883.2]
+fc_right_error = [0.58356 0.59101]
+%principal point
+cc_right = [823.21 619.07]
+cc_right_error = [1.8347 1.5999]
+%skew
+alpha_c_right = [0] 
+alpha_c_right_error = [0]
+%distortion
+kc_right = [-0.08094 -0.41076 0.00170 -0.00048 0.00000]
+kc_right_error = [0.003148 0.045594 0.000150 0.000189 0.000000]

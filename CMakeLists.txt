@@ -1,4 +1,10 @@
+
 cmake_minimum_required(VERSION 2.8)
+
+#--------------------------------------------------------------------
+#Build definitions
+#--------------------------------------------------------------------
+#Required cpp version 
 macro(use_cxx11)
   if (CMAKE_VERSION VERSION_LESS "3.1")
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -9,13 +15,45 @@ macro(use_cxx11)
   endif ()
 endmacro(use_cxx11)
 
+#Project name
 project( SFM )
+
+#Build mode (DEBUG, VERBOSE, RELEASE)
+add_definitions(-D VERBOSE)
+#--------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------
+#Package definitions
+#--------------------------------------------------------------------
+#OpenCV library
 find_package( OpenCV REQUIRED )
 
-add_definitions(-D VERBOSE)
+#Ceres solver library
+find_package( Ceres REQUIRED )
+include_directories(${CERES_INCLUDE_DIRS})
+#--------------------------------------------------------------------
 
-set( HEADER_FILES SFM/Image.hpp SFM/SFM.hpp SFM/estimator/ransac.hpp SFM/ )
-set( EXECUTABLE_FILES SFM/Image.cpp SFM/SFM.cpp SFM/estimator/ransac.cpp )
 
-add_executable( StructureFromMotion ${EXECUTABLE_FILES} ${HEADER_FILES} tester.cpp )
-target_link_libraries( StructureFromMotion ${OpenCV_LIBS} )
+#--------------------------------------------------------------------
+#File definitions
+#--------------------------------------------------------------------
+#Estimator and RANSAC implementations
+file(GLOB ESTIMATOR_FILES
+    "SFM/estimator/*.hpp"
+    "SFM/estimator/*.cpp"
+)
+
+#Structure From Motion and Multiple View Stereo files
+set( SFM_MVS_FILES SFM/SFM.hpp SFM/SFM.cpp SFM/MVS.hpp SFM/MVS.cpp )
+
+#Helper files, such as loaders, readers, writers
+set( HELPER_FILES SFM/Image.hpp SFM/Image.cpp )
+
+#Predefined constants
+set( CONSTANTS_FILES SFM/constants.hpp )
+#---------------------------------------------------------------------
+
+
+add_executable( StructureFromMotion ${SFM_MVS_FILES} ${HELPER_FILES} ${ESTIMATOR_FILES} ${CONSTANTS_FILES} tester.cpp )
+target_link_libraries( StructureFromMotion ${OpenCV_LIBS} ${CERES_LIBRARIES})

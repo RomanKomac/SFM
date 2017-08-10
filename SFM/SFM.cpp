@@ -1,5 +1,5 @@
-#include "estimator/ransac.hpp"
 #include "SFM.hpp"
+#include "estimator/estimator.hpp"
 
 using namespace std;
 using namespace cv;

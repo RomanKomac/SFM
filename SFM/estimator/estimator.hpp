@@ -7,6 +7,9 @@
 //Benchmarking purposes
 #include "time.h"
 
+//Include only once, to avoid redefinitions
+#pragma once
+
 class FundMatEstimator
 {
 	protected:
@@ -42,10 +45,10 @@ class Estimator
                                 int method, double param1, double param2,
                                 cv::_OutputArray _mask);
 		static FundMatEstimator* createFundMatEstimator(int method, double param1, double param2, double param3);
-		static int getInliers(cv::_InputArray _points1, cv::_InputArray _points2, cv::Mat _fundamentalMat, double err, cv::_OutputArray _mask);
+		static int getInliers(cv::_InputArray _points1, cv::_InputArray _points2, cv::Mat _fundamentalMat, double err, cv::_OutputArray _mask = cv::noArray());
 		static int fundMat(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray _F, bool useAll);
 		static bool essenMat(cv::_InputArray _F, cv::_OutputArray _E);
 		static void debug(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray _F);
 		static int updateNumIters(double p, double ep, int modelPoints, int maxIters);
-		static void subselect(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray _output1, cv::_OutputArray _output2, int len, int limit);
+		static void subselect(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray _output1, cv::_OutputArray _output2, int len, int limit = 0);
 };

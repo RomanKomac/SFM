@@ -135,6 +135,30 @@ SFM/Image.cpp.s:
 	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/Image.cpp.s
 .PHONY : SFM/Image.cpp.s
 
+SFM/MVS.o: SFM/MVS.cpp.o
+.PHONY : SFM/MVS.o
+
+# target to build an object file
+SFM/MVS.cpp.o:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/MVS.cpp.o
+.PHONY : SFM/MVS.cpp.o
+
+SFM/MVS.i: SFM/MVS.cpp.i
+.PHONY : SFM/MVS.i
+
+# target to preprocess a source file
+SFM/MVS.cpp.i:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/MVS.cpp.i
+.PHONY : SFM/MVS.cpp.i
+
+SFM/MVS.s: SFM/MVS.cpp.s
+.PHONY : SFM/MVS.s
+
+# target to generate assembly for a file
+SFM/MVS.cpp.s:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/MVS.cpp.s
+.PHONY : SFM/MVS.cpp.s
+
 SFM/SFM.o: SFM/SFM.cpp.o
 .PHONY : SFM/SFM.o
 
@@ -159,29 +183,149 @@ SFM/SFM.cpp.s:
 	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/SFM.cpp.s
 .PHONY : SFM/SFM.cpp.s
 
-SFM/estimator/ransac.o: SFM/estimator/ransac.cpp.o
-.PHONY : SFM/estimator/ransac.o
+SFM/estimator/LO-RANSAC.o: SFM/estimator/LO-RANSAC.cpp.o
+.PHONY : SFM/estimator/LO-RANSAC.o
 
 # target to build an object file
-SFM/estimator/ransac.cpp.o:
-	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/ransac.cpp.o
-.PHONY : SFM/estimator/ransac.cpp.o
+SFM/estimator/LO-RANSAC.cpp.o:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/LO-RANSAC.cpp.o
+.PHONY : SFM/estimator/LO-RANSAC.cpp.o
 
-SFM/estimator/ransac.i: SFM/estimator/ransac.cpp.i
-.PHONY : SFM/estimator/ransac.i
+SFM/estimator/LO-RANSAC.i: SFM/estimator/LO-RANSAC.cpp.i
+.PHONY : SFM/estimator/LO-RANSAC.i
 
 # target to preprocess a source file
-SFM/estimator/ransac.cpp.i:
-	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/ransac.cpp.i
-.PHONY : SFM/estimator/ransac.cpp.i
+SFM/estimator/LO-RANSAC.cpp.i:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/LO-RANSAC.cpp.i
+.PHONY : SFM/estimator/LO-RANSAC.cpp.i
 
-SFM/estimator/ransac.s: SFM/estimator/ransac.cpp.s
-.PHONY : SFM/estimator/ransac.s
+SFM/estimator/LO-RANSAC.s: SFM/estimator/LO-RANSAC.cpp.s
+.PHONY : SFM/estimator/LO-RANSAC.s
 
 # target to generate assembly for a file
-SFM/estimator/ransac.cpp.s:
-	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/ransac.cpp.s
-.PHONY : SFM/estimator/ransac.cpp.s
+SFM/estimator/LO-RANSAC.cpp.s:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/LO-RANSAC.cpp.s
+.PHONY : SFM/estimator/LO-RANSAC.cpp.s
+
+SFM/estimator/PE-RANSAC.o: SFM/estimator/PE-RANSAC.cpp.o
+.PHONY : SFM/estimator/PE-RANSAC.o
+
+# target to build an object file
+SFM/estimator/PE-RANSAC.cpp.o:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/PE-RANSAC.cpp.o
+.PHONY : SFM/estimator/PE-RANSAC.cpp.o
+
+SFM/estimator/PE-RANSAC.i: SFM/estimator/PE-RANSAC.cpp.i
+.PHONY : SFM/estimator/PE-RANSAC.i
+
+# target to preprocess a source file
+SFM/estimator/PE-RANSAC.cpp.i:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/PE-RANSAC.cpp.i
+.PHONY : SFM/estimator/PE-RANSAC.cpp.i
+
+SFM/estimator/PE-RANSAC.s: SFM/estimator/PE-RANSAC.cpp.s
+.PHONY : SFM/estimator/PE-RANSAC.s
+
+# target to generate assembly for a file
+SFM/estimator/PE-RANSAC.cpp.s:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/PE-RANSAC.cpp.s
+.PHONY : SFM/estimator/PE-RANSAC.cpp.s
+
+SFM/estimator/PROSAC.o: SFM/estimator/PROSAC.cpp.o
+.PHONY : SFM/estimator/PROSAC.o
+
+# target to build an object file
+SFM/estimator/PROSAC.cpp.o:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/PROSAC.cpp.o
+.PHONY : SFM/estimator/PROSAC.cpp.o
+
+SFM/estimator/PROSAC.i: SFM/estimator/PROSAC.cpp.i
+.PHONY : SFM/estimator/PROSAC.i
+
+# target to preprocess a source file
+SFM/estimator/PROSAC.cpp.i:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/PROSAC.cpp.i
+.PHONY : SFM/estimator/PROSAC.cpp.i
+
+SFM/estimator/PROSAC.s: SFM/estimator/PROSAC.cpp.s
+.PHONY : SFM/estimator/PROSAC.s
+
+# target to generate assembly for a file
+SFM/estimator/PROSAC.cpp.s:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/PROSAC.cpp.s
+.PHONY : SFM/estimator/PROSAC.cpp.s
+
+SFM/estimator/RANSAC.o: SFM/estimator/RANSAC.cpp.o
+.PHONY : SFM/estimator/RANSAC.o
+
+# target to build an object file
+SFM/estimator/RANSAC.cpp.o:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/RANSAC.cpp.o
+.PHONY : SFM/estimator/RANSAC.cpp.o
+
+SFM/estimator/RANSAC.i: SFM/estimator/RANSAC.cpp.i
+.PHONY : SFM/estimator/RANSAC.i
+
+# target to preprocess a source file
+SFM/estimator/RANSAC.cpp.i:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/RANSAC.cpp.i
+.PHONY : SFM/estimator/RANSAC.cpp.i
+
+SFM/estimator/RANSAC.s: SFM/estimator/RANSAC.cpp.s
+.PHONY : SFM/estimator/RANSAC.s
+
+# target to generate assembly for a file
+SFM/estimator/RANSAC.cpp.s:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/RANSAC.cpp.s
+.PHONY : SFM/estimator/RANSAC.cpp.s
+
+SFM/estimator/TddTest.o: SFM/estimator/TddTest.cpp.o
+.PHONY : SFM/estimator/TddTest.o
+
+# target to build an object file
+SFM/estimator/TddTest.cpp.o:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/TddTest.cpp.o
+.PHONY : SFM/estimator/TddTest.cpp.o
+
+SFM/estimator/TddTest.i: SFM/estimator/TddTest.cpp.i
+.PHONY : SFM/estimator/TddTest.i
+
+# target to preprocess a source file
+SFM/estimator/TddTest.cpp.i:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/TddTest.cpp.i
+.PHONY : SFM/estimator/TddTest.cpp.i
+
+SFM/estimator/TddTest.s: SFM/estimator/TddTest.cpp.s
+.PHONY : SFM/estimator/TddTest.s
+
+# target to generate assembly for a file
+SFM/estimator/TddTest.cpp.s:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/TddTest.cpp.s
+.PHONY : SFM/estimator/TddTest.cpp.s
+
+SFM/estimator/estimator.o: SFM/estimator/estimator.cpp.o
+.PHONY : SFM/estimator/estimator.o
+
+# target to build an object file
+SFM/estimator/estimator.cpp.o:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/estimator.cpp.o
+.PHONY : SFM/estimator/estimator.cpp.o
+
+SFM/estimator/estimator.i: SFM/estimator/estimator.cpp.i
+.PHONY : SFM/estimator/estimator.i
+
+# target to preprocess a source file
+SFM/estimator/estimator.cpp.i:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/estimator.cpp.i
+.PHONY : SFM/estimator/estimator.cpp.i
+
+SFM/estimator/estimator.s: SFM/estimator/estimator.cpp.s
+.PHONY : SFM/estimator/estimator.s
+
+# target to generate assembly for a file
+SFM/estimator/estimator.cpp.s:
+	$(MAKE) -f CMakeFiles/StructureFromMotion.dir/build.make CMakeFiles/StructureFromMotion.dir/SFM/estimator/estimator.cpp.s
+.PHONY : SFM/estimator/estimator.cpp.s
 
 tester.o: tester.cpp.o
 .PHONY : tester.o
@@ -219,12 +363,30 @@ help:
 	@echo "... SFM/Image.o"
 	@echo "... SFM/Image.i"
 	@echo "... SFM/Image.s"
+	@echo "... SFM/MVS.o"
+	@echo "... SFM/MVS.i"
+	@echo "... SFM/MVS.s"
 	@echo "... SFM/SFM.o"
 	@echo "... SFM/SFM.i"
 	@echo "... SFM/SFM.s"
-	@echo "... SFM/estimator/ransac.o"
-	@echo "... SFM/estimator/ransac.i"
-	@echo "... SFM/estimator/ransac.s"
+	@echo "... SFM/estimator/LO-RANSAC.o"
+	@echo "... SFM/estimator/LO-RANSAC.i"
+	@echo "... SFM/estimator/LO-RANSAC.s"
+	@echo "... SFM/estimator/PE-RANSAC.o"
+	@echo "... SFM/estimator/PE-RANSAC.i"
+	@echo "... SFM/estimator/PE-RANSAC.s"
+	@echo "... SFM/estimator/PROSAC.o"
+	@echo "... SFM/estimator/PROSAC.i"
+	@echo "... SFM/estimator/PROSAC.s"
+	@echo "... SFM/estimator/RANSAC.o"
+	@echo "... SFM/estimator/RANSAC.i"
+	@echo "... SFM/estimator/RANSAC.s"
+	@echo "... SFM/estimator/TddTest.o"
+	@echo "... SFM/estimator/TddTest.i"
+	@echo "... SFM/estimator/TddTest.s"
+	@echo "... SFM/estimator/estimator.o"
+	@echo "... SFM/estimator/estimator.i"
+	@echo "... SFM/estimator/estimator.s"
 	@echo "... tester.o"
 	@echo "... tester.i"
 	@echo "... tester.s"
