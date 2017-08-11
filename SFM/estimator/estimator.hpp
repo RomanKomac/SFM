@@ -44,10 +44,12 @@ class Estimator
 		static cv::Mat estFundamentalMat( cv::_InputArray _points1, cv::_InputArray _points2,
                                 int method, double param1, double param2,
                                 cv::_OutputArray _mask);
+		static cv::Mat triangulateDLT(cv::_InputArray _P1, cv::_InputArray _P2, cv::_InputArray _p1, cv::_InputArray _p2);
+		static cv::Mat essentialFromFundamental(cv::_InputArray _F, cv::_InputArray _K1, cv::_InputArray _K2);
+		static bool motionFromEssential(cv::_InputArray _E, cv::_InputArray _K1, cv::_InputArray _K2, cv::_InputArray _p1, cv::_InputArray _p2, cv::_OutputArray _R, cv::_OutputArray _T);
 		static FundMatEstimator* createFundMatEstimator(int method, double param1, double param2, double param3);
 		static int getInliers(cv::_InputArray _points1, cv::_InputArray _points2, cv::Mat _fundamentalMat, double err, cv::_OutputArray _mask = cv::noArray());
 		static int fundMat(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray _F, bool useAll);
-		static bool essenMat(cv::_InputArray _F, cv::_OutputArray _E);
 		static void debug(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray _F);
 		static int updateNumIters(double p, double ep, int modelPoints, int maxIters);
 		static void subselect(cv::_InputArray _points1, cv::_InputArray _points2, cv::_OutputArray _output1, cv::_OutputArray _output2, int len, int limit = 0);

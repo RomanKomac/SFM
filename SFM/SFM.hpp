@@ -6,12 +6,15 @@
 class SFM
 {
 	public:
-		SFM(std::vector<cv::Mat> images);
+		SFM(std::vector<cv::Mat> images, cv::Mat K1, cv::Mat K2);
 		void detect(cv::FeatureDetector &detector);
 		void extract(cv::DescriptorExtractor &extractor);
 		void extract(cv::FREAK &extractor);
+		void extract(cv::SIFT &extractor);
+		void extract(cv::SURF &extractor);
 		void match(cv::DescriptorMatcher &matcher);
 		void RANSACfundamental(double reprError, double confidence, int method);
+		void motionFromFundamental();
 		void showCorrespondences();
 		int avg_num_iters;
 		float avg_runtime;
@@ -25,6 +28,9 @@ class SFM
 		std::vector< cv::Mat > descriptors;
 		std::vector< cv::Mat > masks;
 		std::vector< cv::Mat > fundMatrices;
+		std::vector< cv::Mat > essenMatrices;
+		std::vector< std::pair< cv::Mat, cv::Mat > > RtMatrices;
 		std::vector< std::vector< cv::DMatch > > matches;
-
+		cv::Mat K1;
+		cv::Mat K2;
 };

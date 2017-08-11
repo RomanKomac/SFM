@@ -82,7 +82,7 @@ int Estimator::updateNumIters( double p, double ep, int modelPoints, int maxIter
     return denom >= 0 || -num >= maxIters*(-denom) ? maxIters : cvRound(num/denom);
 }
 
-//Directly ported from opencv
+//Ported from opencv
 int Estimator::getInliers(_InputArray _points1, _InputArray _points2, Mat _F, double err, _OutputArray _mask){
 
 	Mat __m1 = _points1.getMat(), __m2 = _points2.getMat();
@@ -131,9 +131,117 @@ int Estimator::getInliers(_InputArray _points1, _InputArray _points2, Mat _F, do
     return nInliers;
 }
 
-//Directly ported from SFM opencv module
-bool Estimator::essenMat(_InputArray _F, _OutputArray _E){
-	return true;
+//Ported from github libmv, src/libmv/multiview/triangulation.cc
+Mat Estimator::triangulateDLT(_InputArray _P1, _InputArray _P2, _InputArray _p1, _InputArray _p2){
+
+	Mat trian(4, 4, CV_64F);
+	Mat p1 = _p1.getMat(), p2 = _p2.getMat(), P1 = _P1.getMat(), P2 = _P2.getMat();
+
+	CV_Assert(p1.dims == p2.dims);
+	if(p1.dims > 1){
+		p1.reshape(1,1);
+		p2.reshape(1,1);
+	}
+
+	for (int i = 0; i < 4; i++) {
+		trian.at<double>(0,i) = p1.at<float>(0) * P1.at<double>(2,i) - P1.at<double>(0,i);
+		trian.at<double>(1,i) = p1.at<float>(1) * P1.at<double>(2,i) - P1.at<double>(1,i);
+		trian.at<double>(2,i) = p2.at<float>(0) * P2.at<double>(2,i) - P2.at<double>(0,i);
+		trian.at<double>(3,i) = p2.at<float>(1) * P2.at<double>(2,i) - P2.at<double>(1,i);
+	}
+
+	Mat d, U, Vt;
+	SVD::compute(trian, d, U, Vt, SVD::FULL_UV);
+	Mat homog_sol = Vt.t().col(trian.cols-1);
+
+	Mat m(3, 1, CV_64F);
+	double factor = homog_sol.at<double>(homog_sol.total()-1);
+	for(int j = 0; j < 3; j++){
+		m.at<double>(j) = homog_sol.at<double>(j)/factor;
+	}
+	return m;
+}
+
+//Ported from github libmv, src/libmv/multiview/fundamental.cc
+bool Estimator::motionFromEssential(_InputArray _E, _InputArray _K1, _InputArray _K2, _InputArray _p1, _InputArray _p2, _OutputArray _R, _OutputArray _t){
+
+	
+	Mat K1 = _K1.getMat(), K2 = _K2.getMat();
+	Mat U, d, Vt;
+	SVD::compute(_E, d, U, Vt, SVD::FULL_UV);
+
+	// Last column of U is undetermined since d = (a a 0).
+	if (determinant(U) < 0) {
+		U.col(2) *= -1;
+	}
+
+	// Last row of Vt is undetermined since d = (a a 0).
+	if (determinant(Vt) < 0) {
+		Vt.row(2) *= -1;
+	}
+
+	Mat W = (Mat_<double>(3,3) << 0, -1, 0, 1, 0, 0, 0, 0, 1);
+
+	Mat U_W_Vt = U * W * Vt;
+	Mat U_Wt_Vt = U * W.t() * Vt;
+
+	vector< pair<Mat,Mat> > motionMats;
+	motionMats.push_back(pair<Mat,Mat>(U_W_Vt, U.col(2)));
+	motionMats.push_back(pair<Mat,Mat>(U_W_Vt, -U.col(2)));
+	motionMats.push_back(pair<Mat,Mat>(U_Wt_Vt, U.col(2)));
+	motionMats.push_back(pair<Mat,Mat>(U_Wt_Vt, -U.col(2)));
+
+	
+	Mat P1 = Mat_<double>(3,4), P2 = Mat_<double>(3,4);
+	Mat R1 = Mat::eye(3, 3, CV_64F);
+	Mat t1 = Mat::zeros(3, 1, CV_64F);
+
+	for(int h = 0; h < R1.cols; h++){
+		R1.col(h).copyTo(P1.col(h));
+	}
+	t1.copyTo(P1.col(3));
+	P1 = K1 * P1;
+	
+	for (int i = 0; i < motionMats.size(); i++) {
+		Mat R2 = motionMats[i].first;
+		Mat t2 = motionMats[i].second;
+		
+		for(int h = 0; h < R2.cols; h++){
+			R2.col(h).copyTo(P2.col(h));
+		}
+		t2.copyTo(P2.col(3));
+		P2 = K2 * P2;
+
+		Mat X = Estimator::triangulateDLT(P1, P2, _p1, _p2);
+		
+		//Depths(z-coordinate)
+		double d1 = Mat(R1*X).at<double>(2) + t1.at<double>(2);
+		double d2 = Mat(R2*X).at<double>(2) + t2.at<double>(2);
+		// Test if point is in front of the cameras
+		if (d1 > 0 && d2 > 0) {
+			R2.copyTo(_R);
+			t2.copyTo(_t);
+			return true;
+		}
+	}
+	
+	//Could not recover motion data
+	return false;
+}
+
+
+//Ported from SFM opencv module
+Mat Estimator::essentialFromFundamental(_InputArray _F, _InputArray _K1, _InputArray _K2){
+	const Mat F = _F.getMat(), K1 = _K1.getMat(), K2 = _K2.getMat();
+    const int depth =  F.depth();
+
+    CV_Assert(F.cols == 3 && F.rows == 3);
+    CV_Assert((depth == CV_32F || depth == CV_64F));
+
+    Mat E(3, 3, depth);
+    E = K2.t() * F * K1;
+
+    return E;
 }
 
 //Directly ported from opencv
@@ -286,9 +394,9 @@ Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
 
     FundMatEstimator* fme = createFundMatEstimator(method, param1, param2, param3);
     fme->run(m1, m2, F, _mask, similarities);
+    result = countNonZero(mask);
     Estimator::num_iters = fme->lastNumOfIterations();
     Estimator::runtime = fme->lastRuntime();
-    //cout << result << endl;
 
     //IN case if inliers are lower than required
     if( result < 8)

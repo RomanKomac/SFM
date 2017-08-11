@@ -40,7 +40,7 @@ void SFMPipeline(string path, string pattern){
 	cout << "Loading images" << endl;
 	#endif
 
-	SFM pipeline(Image::loadFromFolder(path, pattern));
+	SFM pipeline(Image::loadFromFolder(path, pattern), Mat(Matx33d(2899.3,0,783.96,0,2890.0,666.45,0,0,1)), Mat(Matx33d(2899.3,0,783.96,0,2890.0,666.45,0,0,1)));
 
 	// Finds and extracts keypoints
 	#if defined VERBOSE
@@ -76,6 +76,13 @@ void SFMPipeline(string path, string pattern){
 
 	cout << "Average number of iterations: " << pipeline.avg_num_iters << endl;
 	cout << "Average runtime: " << pipeline.avg_runtime << endl;
+
+	// Estimates essential matrices from fundamental using intrinsic camera parameters
+	#if defined VERBOSE
+	cout << "Estimating essential matrices" << endl;
+	#endif	
+
+	pipeline.motionFromFundamental();
 
 	// Shows correspondences
 	#if defined VERBOSE

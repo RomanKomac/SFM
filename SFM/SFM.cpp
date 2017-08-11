@@ -4,9 +4,12 @@
 using namespace std;
 using namespace cv;
 
-SFM::SFM(vector<Mat> images){
+SFM::SFM(vector<Mat> images, Mat _K1, Mat _K2){
 	BGR_imgs = images;
 	GRAY_imgs = vector<Mat>();
+
+	K1 = _K1;
+	K2 = _K2;
 
 	for(int i = 0; i < images.size(); i++){
 		Mat greyMat;
@@ -39,6 +42,22 @@ void SFM::extract(FREAK &extractor){
 	}
 }
 
+void SFM::extract(SIFT &extractor){
+	for(int i = 0; i < GRAY_imgs.size(); i++){
+		Mat desc;
+		extractor.compute(GRAY_imgs[i], keypoints[i], desc);
+		descriptors.push_back(desc);
+	}
+}
+
+void SFM::extract(SURF &extractor){
+	for(int i = 0; i < GRAY_imgs.size(); i++){
+		Mat desc;
+		extractor.compute(GRAY_imgs[i], keypoints[i], desc);
+		descriptors.push_back(desc);
+	}
+}
+
 void SFM::match(DescriptorMatcher &matcher){
 	// Rule of thumb proposed in Lowe's paper
 	// If the (strength_first_match < ratio*strength_second_match) then keep
@@ -61,8 +80,8 @@ void SFM::match(DescriptorMatcher &matcher){
 }
 
 void SFM::RANSACfundamental(double reprError, double confidence, int method){
-	fundMatrices = vector<Mat>();
-	masks = vector<Mat>();
+	fundMatrices = vector<Mat>(matches.size());
+	masks = vector<Mat>(matches.size());
 
 	avg_num_iters = 0;
 	avg_runtime = 0;
@@ -81,15 +100,52 @@ void SFM::RANSACfundamental(double reprError, double confidence, int method){
 		Mat F;
 
 		F = Estimator::estFundamentalMat(points1, points2, method, reprError, confidence, mask, similarities);
-		fundMatrices.push_back(F);
-		masks.push_back(mask);
+		fundMatrices[i] = F;
+		masks[i] = mask;
 		
 		avg_num_iters += Estimator::num_iters;
 		avg_runtime += Estimator::runtime;
-		//cout << F << endl;
 	}
 	avg_num_iters /= matches.size();
 	avg_runtime /= matches.size();
+}
+
+void SFM::motionFromFundamental(){
+	essenMatrices = vector<Mat>(matches.size());
+	RtMatrices = vector< pair<Mat,Mat> >(matches.size());
+
+	for(int i = 0; i < matches.size(); i++){
+		vector<Point2f> points1;
+		vector<Point2f> points2;
+		vector<float> similarities;
+		for(int k = 0; k < matches[i].size(); k++){
+			points1.push_back(keypoints[i][matches[i][k].queryIdx].pt);
+			points2.push_back(keypoints[i+1][matches[i][k].trainIdx].pt);
+			similarities.push_back(matches[i][k].distance);
+		}
+		vector<Point2f> bestValidPoint1, bestValidPoint2;
+		Mat mask = masks[i];
+		for(int j = 0; j < mask.total(); j++){
+			if(mask.at<uchar>(j)){
+				bestValidPoint1.push_back(points1[j]);
+				bestValidPoint2.push_back(points2[j]);
+				break;
+			}
+		}
+
+		Mat E, R, t;
+		E = Estimator::essentialFromFundamental(fundMatrices[i], K1, K2);
+		essenMatrices[i] = E;
+
+		if(Estimator::motionFromEssential(E, K1, K2, bestValidPoint1, bestValidPoint2, R, t)){
+			RtMatrices[i] = pair<Mat,Mat>(R,t);
+			cout << R << endl;
+			cout << t << endl;
+		} else {
+			cout << "Valid inter-camera motion could not be recovered" << endl;
+		}
+
+	}
 }
 
 void SFM::showCorrespondences(){
