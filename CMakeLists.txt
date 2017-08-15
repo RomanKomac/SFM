@@ -12,6 +12,7 @@ macro(use_cxx11)
     endif ()
   else ()
     set (CMAKE_CXX_STANDARD 11)
+
   endif ()
 endmacro(use_cxx11)
 
@@ -44,16 +45,22 @@ file(GLOB ESTIMATOR_FILES
     "SFM/estimator/*.cpp"
 )
 
+#Estimator and RANSAC implementations
+file(GLOB BUNDLE_ADJUSTMENT_FILES
+    "SFM/bundle_adjustment/*.hpp"
+    "SFM/bundle_adjustment/*.cpp"
+)
+
 #Structure From Motion and Multiple View Stereo files
 set( SFM_MVS_FILES SFM/SFM.hpp SFM/SFM.cpp SFM/MVS.hpp SFM/MVS.cpp )
 
 #Helper files, such as loaders, readers, writers
 set( HELPER_FILES SFM/Image.hpp SFM/Image.cpp )
 
-#Predefined constants
-set( CONSTANTS_FILES SFM/constants.hpp )
+#Predefined constants and definitions
+set( PREDEF_FILES SFM/constants.hpp SFM/typedefs.hpp )
 #---------------------------------------------------------------------
 
 
-add_executable( StructureFromMotion ${SFM_MVS_FILES} ${HELPER_FILES} ${ESTIMATOR_FILES} ${CONSTANTS_FILES} tester.cpp )
+add_executable( StructureFromMotion ${SFM_MVS_FILES} ${HELPER_FILES} ${ESTIMATOR_FILES} ${BUNDLE_ADJUSTMENT_FILES} ${PREDEF_FILES} tester.cpp )
 target_link_libraries( StructureFromMotion ${OpenCV_LIBS} ${CERES_LIBRARIES})

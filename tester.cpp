@@ -3,13 +3,14 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
 #include "SFM/constants.hpp"
 #include "SFM/SFM.hpp"
 #include "SFM/Image.hpp"
 
 using namespace cv;
 using namespace std;
+using namespace xfeatures2d;
 
 void SFMPipeline(string path, string pattern);
 
@@ -40,18 +41,17 @@ void SFMPipeline(string path, string pattern){
 	cout << "Loading images" << endl;
 	#endif
 
-	SFM pipeline(Image::loadFromFolder(path, pattern), Mat(Matx33d(2899.3,0,783.96,0,2890.0,666.45,0,0,1)), Mat(Matx33d(2899.3,0,783.96,0,2890.0,666.45,0,0,1)));
+	SFM pipeline(Image::loadFromFolder(path, pattern), Mat(Matx33d(2892.3,0,823.21,0,2883.2,619.07,0,0,1)));
 
 	// Finds and extracts keypoints
 	#if defined VERBOSE
 	cout << "Detecting and extracting keypoints" << endl;
 	#endif	
-	
-	SurfFeatureDetector detector;
-	SurfDescriptorExtractor extractor;
 
-	pipeline.detect(detector);
-	pipeline.extract(extractor);
+	cv::Ptr<Feature2D> f2d = xfeatures2d::SIFT::create();
+
+	pipeline.detect(f2d);
+	pipeline.extract(f2d);
 
 	// Matches and filters descriptors
 	#if defined VERBOSE
@@ -59,7 +59,7 @@ void SFMPipeline(string path, string pattern){
 	#endif	
 	
 	BFMatcher matcher;
-	pipeline.match(matcher);
+	pipeline.match(matcher, MATCH_CONSECUTIVE, 100);
 
 
 	// Estimates fundamental matrices using RANSAC
@@ -70,9 +70,9 @@ void SFMPipeline(string path, string pattern){
 	// Reprojection error, the tolerance of the estimated inlier model
 	double reprError = 1;
 	// COnfidence of the model. 0.99 means 99% probability of it being correct.
-	double confidence = 0.999;
+	double confidence = 0.99;
 
-	pipeline.RANSACfundamental(reprError, confidence, SFM_LO_RANSAC);
+	pipeline.RANSACfundamental(reprError, confidence, SFM_LO_RANSAC, 50);
 
 	cout << "Average number of iterations: " << pipeline.avg_num_iters << endl;
 	cout << "Average runtime: " << pipeline.avg_runtime << endl;
@@ -84,11 +84,24 @@ void SFMPipeline(string path, string pattern){
 
 	pipeline.motionFromFundamental();
 
-	// Shows correspondences
+	// Adjusts bundle using Ceres solver
 	#if defined VERBOSE
-	cout << "Showing correspondences" << endl;
+	cout << "Performing initial bundle adjustment" << endl;
 	#endif	
 
-	pipeline.showCorrespondences();
+	pipeline.initialBundleAdjustment();
+
+	//pipeline.showEpipolarLines();
+
+	//pipeline.denseReconstruction(0);
+
+	// Shows correspondences
+	#if defined VERBOSE
+	cout << "Camera-pair sparse reconstruction" << endl;
+	#endif	
+
+	//pipeline.showCorrespondences();
+	pipeline.visualizeCameraMotion();
+	//pipeline.showTriangulation(0,1);
   
 }

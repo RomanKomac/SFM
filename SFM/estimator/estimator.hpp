@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "../constants.hpp"
+#include "../typedefs.hpp"
 //Benchmarking purposes
 #include "time.h"
 
@@ -45,6 +46,8 @@ class Estimator
                                 int method, double param1, double param2,
                                 cv::_OutputArray _mask);
 		static cv::Mat triangulateDLT(cv::_InputArray _P1, cv::_InputArray _P2, cv::_InputArray _p1, cv::_InputArray _p2);
+		static bool triangulateViews(std::vector<cv::Point2f> points1, std::vector<cv::Point2f> points2, 
+                                 cv::Matx34f Pleft, cv::Matx34f Pright, std::vector<intPair> indxs, intPair pr, cv::Mat K, PointCloud_f& pointCloud);
 		static cv::Mat essentialFromFundamental(cv::_InputArray _F, cv::_InputArray _K1, cv::_InputArray _K2);
 		static bool motionFromEssential(cv::_InputArray _E, cv::_InputArray _K1, cv::_InputArray _K2, cv::_InputArray _p1, cv::_InputArray _p2, cv::_OutputArray _R, cv::_OutputArray _T);
 		static FundMatEstimator* createFundMatEstimator(int method, double param1, double param2, double param3);

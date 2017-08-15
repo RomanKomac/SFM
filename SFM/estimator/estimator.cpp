@@ -429,3 +429,54 @@ FundMatEstimator* Estimator::createFundMatEstimator(int method, double param1, d
 			return NULL;
 	}
 }
+
+bool Estimator::triangulateViews(vector<Point2f> points1, vector<Point2f> points2, 
+                                 Matx34f Pleft, Matx34f Pright, vector<intPair> indxs, intPair pr, Mat K, PointCloud_f& pointCloud){
+	Mat normalizedLeftPts;
+	Mat normalizedRightPts;
+	undistortPoints(points1, normalizedLeftPts,  K, Mat());
+	undistortPoints(points2, normalizedRightPts, K, Mat());
+
+	Mat pHomogeneous;
+	triangulatePoints(Pleft, Pright, normalizedLeftPts, normalizedRightPts, pHomogeneous);
+
+	Mat points3f;
+	convertPointsFromHomogeneous(pHomogeneous.t(), points3f);
+
+	Mat rvecLeft;
+    Rodrigues(Pleft.get_minor<3, 3>(0, 0), rvecLeft);
+    Mat tvecLeft(Pleft.get_minor<3, 1>(0, 3).t());
+
+    vector<Point2f> projectedOnLeft(points1.size());
+    projectPoints(points3f, rvecLeft, tvecLeft, K, Mat(), projectedOnLeft);
+
+    Mat rvecRight;
+    Rodrigues(Pright.get_minor<3, 3>(0, 0), rvecRight);
+    Mat tvecRight(Pright.get_minor<3, 1>(0, 3).t());
+
+    vector<Point2f> projectedOnRight(points2.size());
+    projectPoints(points3f, rvecRight, tvecRight, K, Mat(), projectedOnRight);
+
+    for (int l = 0; l < points3f.rows; l++) {
+        //check if point reprojection error is small enough
+        if (cv::norm(projectedOnLeft[l]  - points1[l])  > MIN_REPR_ERROR ||
+            cv::norm(projectedOnRight[l] - points2[l]) > MIN_REPR_ERROR)
+        {
+            continue;
+        }
+
+        Mapped3DPoint_f p;
+        p.p = Point3f(points3f.at<float>(l, 0),
+                      points3f.at<float>(l, 1),
+                      points3f.at<float>(l, 2)
+                      );
+
+        //use back reference to point to original features in images
+        p.views[pr.first]  = indxs[l].first;
+        p.views[pr.second] = indxs[l].second;
+
+        pointCloud.push_back(p);
+    }
+
+    return pointCloud.size() > 0;
+}
