@@ -1,4 +1,5 @@
 #include <opencv2/viz/vizcore.hpp>
+#include <opencv2/sfm.hpp>
 #include "SFM.hpp"
 #include "estimator/estimator.hpp"
 #include "constants.hpp"
@@ -210,6 +211,12 @@ void SFM::RANSACfundamental(double reprError, double confidence, int method, int
 	}
 	avg_num_iters /= cntr;
 	avg_runtime /= cntr;
+
+	sortedMasks = vector< pair< intPair,Mat > >();
+	for(map< intPair, Mat >::iterator miter = maskMap.begin(); miter != maskMap.end(); miter++){
+		sortedMasks.push_back(*miter);
+	}
+	sort(sortedMasks.begin(), sortedMasks.end(), sortMasks);
 }
 
 void SFM::motionFromFundamental(){
@@ -243,10 +250,20 @@ void SFM::motionFromFundamental(){
 				}
 
 				Mat E, R, t, F = fundIt->second;
-				E = Estimator::essentialFromFundamental(F, K1, K2);
+				cv::sfm::essentialFromFundamental(F,K1,K2,E);
+				//E = Estimator::essentialFromFundamental(F, K1, K2);
 				essenMap.insert( pair< intPair,Mat >(pr,E) );
-
-				if(Estimator::motionFromEssential(E, K1, K2, bestValidPoint1, bestValidPoint2, R, t)){
+				vector<Mat> Rs;
+				vector<Mat> ts;
+				Mat bvp1=Mat(2,1,CV_64FC1), bvp2=Mat(2,1,CV_64FC1);
+				bvp1.at<double>(0) = bestValidPoint1[0].x;
+				bvp1.at<double>(1) = bestValidPoint1[0].y;
+				bvp2.at<double>(0) = bestValidPoint2[0].x;
+				bvp2.at<double>(1) = bestValidPoint2[0].y;
+				cv::sfm::motionFromEssential(E, Rs, ts);
+				int idx = cv::sfm::motionFromEssentialChooseSolution(Rs,ts,K1,bvp1,K2,bvp2);
+				RtMap.insert( pair< intPair,MatPair >( pr,MatPair(Rs[idx],ts[idx]) ) );
+				/*if(Estimator::motionFromEssential(E, K1, K2, bestValidPoint1, bestValidPoint2, R, t)){
 					RtMap.insert( pair< intPair,MatPair >( pr,MatPair(R,t) ) );
 					#if defined VERBOSE
 					cout << "Recovered Rotation and Translation matrix for pair: " << pr.first << "|" << pr.second << endl;
@@ -257,18 +274,14 @@ void SFM::motionFromFundamental(){
 					#if defined VERBOSE
 					cout << "Valid inter-camera motion could not be recovered for pair: " << pr.first << "|" << pr.second << endl;
 					#endif
-				}
+				}*/
 			}
 		}
 	}
 }
 
 void SFM::initialBundleAdjustment(){
-	sortedMasks = vector< pair< intPair,Mat > >();
-	for(map< intPair, Mat >::iterator iter = maskMap.begin(); iter != maskMap.end(); iter++){
-		sortedMasks.push_back(*iter);
-	}
-	sort(sortedMasks.begin(), sortedMasks.end(), sortMasks);
+	
 
 	for(int i = 0; i < sortedMasks.size(); i++){
 		//If found Rotation and translation triangulate views
@@ -465,40 +478,48 @@ void SFM::denseReconstruction(int method){
 }
 
 void SFM::visualizeCameraMotion(){
-	viz::Viz3d window("Coordinate Frame");
 
-	bool camera_pov = false;
+	
+    viz::Viz3d window2("Coordinate Frame Translation-Rotation");
+
 
     /// Add coordinate axes
-    window.showWidget("Coordinate Widget", viz::WCoordinateSystem());
+    window2.showWidget("Coordinate Widget", viz::WCoordinateSystem());
 
-    vector<Affine3d> path;
+    vector<Affine3d> path2;
 
-    Affine3d n = Affine3d(Matx33d(1,0,0,0,1,0,0,0,1),Mat(Matx31d(0,0,0)));
+    Affine3d n2 = Affine3d(Matx33d(1,0,0,0,1,0,0,0,1),Mat(Matx31d(0,0,0)));
 
-    path.push_back(Affine3d(n.rotation(), n.translation()));
+    for(map< intPair, MatPair >::iterator itr = RtMap.begin(); itr != RtMap.end(); itr++)
+    	cout << itr->first.first << " " << itr->first.second << endl;
+
+    path2.push_back(Affine3d(n2.rotation(), n2.translation()));
 	for (int i = 0; i < GRAY_imgs.size()-1; i++){
 		for(int j = i+1; j < GRAY_imgs.size(); j++){
 			map< intPair, MatPair >::iterator RtIt;
 			if((RtIt = RtMap.find(intPair(i,j))) != RtMap.end()){
-				n = Affine3d(Matx33d(1,0,0,0,1,0,0,0,1),RtIt->second.second)*n;
-				n = Affine3d(RtIt->second.first, 0) * n;
-				path.push_back(Affine3d(n.rotation(), n.translation()));
+				
+				n2 = Affine3d(Matx33d(1,0,0,0,1,0,0,0,1),RtIt->second.second)*n2;
+				n2 = Affine3d(RtIt->second.first, 0) * n2;
+				path2.push_back(Affine3d(n2.rotation(), n2.translation()));
+				#if defined VERBOSE
+				cout << "Added view motion " << i << "|" << j << " to visualization" << endl;
+				#endif
 			}
 		}
 		
 	}
 
-    viz::WTrajectory trajectory(path, viz::WTrajectory::PATH, 0.5);
-    viz::WTrajectoryFrustums frustums(path, Vec2f(0.889484, 0.523599), 0.5, viz::Color::yellow());
+    viz::WTrajectory trajectory2(path2, viz::WTrajectory::PATH, 0.5);
+    viz::WTrajectoryFrustums frustums2(path2, Vec2f(0.889484, 0.523599), 0.5, viz::Color::yellow());
 
 
-    window.showWidget("cameras", trajectory);
-	window.showWidget("frustums", frustums);
+    window2.showWidget("cameras", trajectory2);
+	window2.showWidget("frustums", frustums2);
 
     /// Start event loop.
-    window.spin();
-	
+    window2.spin();
+
 }
 
 void SFM::showTriangulation(int i, int j){

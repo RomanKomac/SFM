@@ -19,6 +19,19 @@ bool match(string fname, vector<string> paths) {
 }
 
 
+vector<string> Image::loadNamesFromTxt(string path){
+	string descriptionFilePath = path + "/ImageList.txt";
+	vector<string> paths;
+
+	ifstream descFile;
+	descFile.open(descriptionFilePath.c_str());
+	string line;
+	while(getline(descFile, line)){
+		paths.push_back(path+"/"+line);
+	}
+	descFile.close();
+	return paths;
+}
 
 
 vector<Mat> Image::loadFromFolder(string path){

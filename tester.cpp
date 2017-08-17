@@ -97,7 +97,7 @@ void SFMPipeline(string path, string pattern){
 
 	// Shows correspondences
 	#if defined VERBOSE
-	cout << "Camera-pair sparse reconstruction" << endl;
+	cout << "Camera motion visualization" << endl;
 	#endif	
 
 	//pipeline.showCorrespondences();

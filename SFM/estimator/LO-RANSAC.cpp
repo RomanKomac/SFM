@@ -26,7 +26,7 @@ class LO_RANSAC_Estimator : public FundMatEstimator{
 			loop_runtime = 0;
 
 			Mat points1 = _points1.getMat(), points2 = _points2.getMat();
-			Mat mask, model, bestModel, subselect1, subselect2, bestMask1, bestMask2, subtest1, subtest2;
+			Mat mask, model, model2, bestModel, subselect1, subselect2, bestMask1, bestMask2, subtest1, subtest2, subselect11, subselect12;
 
 	        //Number of iterations set according to the standard termination criterion
 	        int iter, niters = (int)ceil(log(1 - confidence)/log(1 - pow(inlier_ratio,8)));
@@ -63,6 +63,7 @@ class LO_RANSAC_Estimator : public FundMatEstimator{
 
 	        clock_t t1,t2;
 		    t1=clock();
+		    
 	        for( iter = 0; iter < niters; iter++ )
 	        {
 	        	//For benchmarking
@@ -103,13 +104,17 @@ class LO_RANSAC_Estimator : public FundMatEstimator{
 								h++;
 							}
 						}
+
 	                    for(int j = 0; j < INNER_LOOP; j++){
-	                    	Estimator::subselect(subtest1, subtest2, subselect1, subselect2, MIN_MODEL_POINTS);
-	                    	int n2models = Estimator::fundMat(subselect1, subselect2, model, true);
-	                    	CV_Assert( model.rows % n2models == 0 );
-	            			Size model2Size(model.cols, model.rows/n2models);
+
+	                    	Estimator::subselect(subtest1, subtest2, subselect11, subselect12, MIN_MODEL_POINTS);
+	                    	int n2models = Estimator::fundMat(subselect11, subselect12, model2, true);
+	                    	if(n2models < 1)
+	                    		break;
+	                    	CV_Assert( model2.rows % n2models == 0 );
+	            			Size model2Size(model2.cols, model2.rows/n2models);
 	            			for(int l = 0; l < n2models; l++ ){
-	            				Mat model_l = model.rowRange( i*model2Size.height, (i+1)*model2Size.height );
+	            				Mat model_l = model2.rowRange( i*model2Size.height, (i+1)*model2Size.height );
 	            				int betterCount = Estimator::getInliers( points1, points2, model_l, reprojectError, mask );
 	            				if( betterCount > max(maxGoodCount, MIN_MODEL_POINTS-1) ){
 	            					swap(mask, bestMask1);

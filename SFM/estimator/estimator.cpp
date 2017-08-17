@@ -395,6 +395,20 @@ Mat Estimator::estFundamentalMat(_InputArray _points1, _InputArray _points2,
     FundMatEstimator* fme = createFundMatEstimator(method, param1, param2, param3);
     fme->run(m1, m2, F, _mask, similarities);
     result = countNonZero(mask);
+
+    Mat filteredPoints1(result, m1.cols, m1.type()), filteredPoints2(result, m2.cols, m2.type());
+   	int k = 0;
+    for(int j = 0; j < mask.total() && k < result; j++){
+    	if(mask.at<uchar>(j)){
+    		m1.row(j).copyTo(filteredPoints1.row(k));
+    		m2.row(j).copyTo(filteredPoints2.row(k));
+    		k++;
+		}
+    }
+
+    //Re-weighting, improving accuracy
+    F = findFundamentalMat(filteredPoints1, filteredPoints2, CV_FM_LMEDS, param1, param2);
+
     Estimator::num_iters = fme->lastNumOfIterations();
     Estimator::runtime = fme->lastRuntime();
 

@@ -7,7 +7,7 @@ class Image
 	public:
 		static std::vector<cv::Mat> loadFromFolder(std::string path, std::string reg_name);
 		static std::vector<cv::Mat> loadFromFolder(std::string path);
-
+		static std::vector<std::string> loadNamesFromTxt(std::string path);
 	private:
 		static std::vector<cv::Mat> loadFF(std::string path, std::string reg_name);
 
