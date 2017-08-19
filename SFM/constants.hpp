@@ -24,11 +24,14 @@
 //By default we set the inlier ratio for RANSAC algorithms to 50% (50% outlier contamination)
 #define INLIER_RATIO 0.5
 
+//Rule of thumb for mytch filtering proposed by Lowe
+#define LOWE_MATCH_FILTER_RATIO 0.8f
+
 //Minimal ratio when considering strong camera pair bundle adjustment
 #define MINIMAL_BA_INLIER_RATIO 0.5
 
 //Pixel reprojection error after triangulation
-#define MIN_REPR_ERROR 3
+#define MIN_REPR_ERROR 4
 
 //MIN_MATCH_DISTANCE
 #define MERGE_CLOUD_POINT_MIN_MATCH_DISTANCE 0.02

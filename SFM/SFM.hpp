@@ -34,15 +34,17 @@ class SFM
 		void motionFromFundamental();
 		void initialBundleAdjustment();
 		void additionalBundleAdjustment();
-		void mergePointCloud(const PointCloud_f& cloud);
+		void mergePointCloud(const PointCloud_d& cloud);
 		void visualizeCameraMotion();
 		void denseReconstruction(int method);
 		void showEpipolarLines();
 		void showCorrespondences();
-		void showTriangulation(int i, int j);
+		void showTriangulation(int i, int j, float max_dist);
 		int avg_num_iters;
 		float avg_runtime;
 	private:
+		std::map<int,int> dependencyNet();
+		void incrementalBundleAdjustment();
 		static bool sortMatches(cv::DMatch m1, cv::DMatch m2){
 			return m1.distance < m2.distance;
 		}
@@ -68,9 +70,9 @@ class SFM
 		cv::Size defImageSize;
 		std::vector<double> distort1;
 		std::vector<double> distort2;
-		std::vector< Features_f > mImageFeatures;
-		PointCloud_f             mReconstructionCloud;
-		std::vector<cv::Matx34f> mCameraPoses;
+		std::vector< Features_d > mImageFeatures;
+		PointCloud_d             mReconstructionCloud;
+		std::vector<cv::Matx34d> mCameraPoses;
 		std::set<int>            mDoneViews;
     	std::set<int>            mGoodViews;
     	BundleAdjustment ba;

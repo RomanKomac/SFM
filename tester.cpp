@@ -95,6 +95,13 @@ void SFMPipeline(string path, string pattern){
 
 	//pipeline.denseReconstruction(0);
 
+	
+	#if defined VERBOSE
+	cout << "Sparse reconstruction of selected cameras" << endl;
+	#endif	
+
+	//pipeline.showTriangulation(0, 38, 40.0);
+
 	// Shows correspondences
 	#if defined VERBOSE
 	cout << "Camera motion visualization" << endl;

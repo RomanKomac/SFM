@@ -31,7 +31,7 @@ ceres::CostFunction* BundleAdjustment::createCostFunction(const double observed_
     };
 }
 
-bool BundleAdjustment::run(PointCloud_f& pointCloud, vector<Matx34f>& cameraPoses, _InputArray _K, const vector<Features_f>& image2dFeatures, int method, _OutputArray _Kopt){
+bool BundleAdjustment::run(PointCloud_d& pointCloud, vector<Matx34d>& cameraPoses, _InputArray _K, const vector<Features_d>& image2dFeatures, int method, _OutputArray _Kopt){
     ceres::Problem problem;
     Mat K = _K.getMat();
     if(_Kopt.needed())
@@ -41,19 +41,19 @@ bool BundleAdjustment::run(PointCloud_f& pointCloud, vector<Matx34f>& cameraPose
     vector< Matx<double, 1, 6> > cameraPoses6d(cameraPoses.size());
     cameraPoses6d.reserve(cameraPoses.size());
     for (size_t i = 0; i < cameraPoses.size(); i++) {
-        const Matx34f& pose = cameraPoses[i];
+        const Matx34d& pose = cameraPoses[i];
 
         if (pose(0, 0) == 0 and pose(1, 1) == 0 and pose(2, 2) == 0) {
             //This camera pose is empty, it should not be used in the optimization
             cameraPoses6d.push_back(Matx<double, 1, 6>());
             continue;
         }
-        Vec3f t(pose(0, 3), pose(1, 3), pose(2, 3));
-        Matx33f R = pose.get_minor<3, 3>(0, 0);
-        float angleAxis[3];
-        ceres::RotationMatrixToAngleAxis<float>(R.t().val, angleAxis); //Ceres assumes col-major...
+        Vec3d t(pose(0, 3), pose(1, 3), pose(2, 3));
+        Matx33d R = pose.get_minor<3, 3>(0, 0);
+        double angleAxis[3];
+        ceres::RotationMatrixToAngleAxis<double>(R.t().val, angleAxis); //Ceres assumes col-major...
 
-        cameraPoses6d.push_back(Matx<float, 1, 6>(
+        cameraPoses6d.push_back(Matx<double, 1, 6>(
                 angleAxis[0],
                 angleAxis[1],
                 angleAxis[2],
@@ -68,7 +68,7 @@ bool BundleAdjustment::run(PointCloud_f& pointCloud, vector<Matx34f>& cameraPose
     vector<Vec3d> points3d(pointCloud.size());
 
     for (int i = 0; i < pointCloud.size(); i++) {
-        const Mapped3DPoint_f& p = pointCloud[i];
+        const Mapped3DPoint_d& p = pointCloud[i];
         points3d[i] = Vec3d(p.p.x, p.p.y, p.p.z);
 
         for (map<int,int>::const_iterator it = p.views.begin(); it != p.views.end(); it++) {
@@ -122,8 +122,8 @@ bool BundleAdjustment::run(PointCloud_f& pointCloud, vector<Matx34f>& cameraPose
 
     //Implement the optimized camera poses and 3D points back into the reconstruction
     for (int i = 0; i < cameraPoses.size(); i++) {
-        Matx34f& pose = cameraPoses[i];
-        Matx34f poseBefore = pose;
+        Matx34d& pose = cameraPoses[i];
+        Matx34d poseBefore = pose;
 
         if (pose(0, 0) == 0 and pose(1, 1) == 0 and pose(2, 2) == 0) {
             //This camera pose is empty, it was not used in the optimization

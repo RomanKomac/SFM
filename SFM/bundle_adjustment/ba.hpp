@@ -103,7 +103,7 @@ class BundleAdjustment{
 	public:
 		BundleAdjustment();
 		static ceres::CostFunction* createCostFunction(const double observed_x, const double observed_y, const int method);
-		bool run(PointCloud_f& pointCloud, std::vector< cv::Matx34f >& cameraPoses, cv::_InputArray K, const std::vector< Features_f >& image2dFeatures, int method, cv::_OutputArray Kopt = cv::noArray());
+		bool run(PointCloud_d& pointCloud, std::vector< cv::Matx34d >& cameraPoses, cv::_InputArray K, const std::vector< Features_d >& image2dFeatures, int method, cv::_OutputArray Kopt = cv::noArray());
 	private:
 		static bool logging;
 		static void initLogging();
