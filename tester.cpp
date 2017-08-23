@@ -78,30 +78,44 @@ void SFMPipeline(string path, string pattern){
 	cout << "Average runtime: " << pipeline.avg_runtime << endl;
 
 	// Estimates essential matrices from fundamental using intrinsic camera parameters
+	// Estimated motion is used later in refining camera position and orientation
 	#if defined VERBOSE
 	cout << "Estimating essential matrices" << endl;
 	#endif	
 
 	pipeline.motionFromFundamental();
 
+
+	//For every three views get points
+	#if defined VERBOSE
+	cout << "Calculating consistencies" << endl;
+	#endif	
+
+	//pipeline.buildNet();
+	pipeline.minThreeViewsConsistency();
+	pipeline.triangulationMinThreeViews();
+
+	//pipeline.bundleAdjustment();
+	pipeline.sparseReconstruction();
+	
 	// Adjusts bundle using Ceres solver
 	#if defined VERBOSE
 	cout << "Performing initial bundle adjustment" << endl;
 	#endif	
 
-	pipeline.initialBundleAdjustment();
+	//pipeline.buildNet();
+	cout << "after buildnet" << endl;
+	//pipeline.initialBundleAdjustment();
+	//pipeline.additionalBundleAdjustment();
 
-	//pipeline.showEpipolarLines();
-
-	//pipeline.denseReconstruction(0);
-
-	
+	// Incremental bundle adjustment. Rotation and translation are pre-adjusted using PnP solver
 	#if defined VERBOSE
-	cout << "Sparse reconstruction of selected cameras" << endl;
+	cout << "Performing additional bundle adjustment" << endl;
 	#endif	
 
-	//pipeline.showTriangulation(0, 38, 40.0);
-
+	//pipeline.incrementalBundleAdjustment();
+	
+	
 	// Shows correspondences
 	#if defined VERBOSE
 	cout << "Camera motion visualization" << endl;
@@ -110,5 +124,5 @@ void SFMPipeline(string path, string pattern){
 	//pipeline.showCorrespondences();
 	pipeline.visualizeCameraMotion();
 	//pipeline.showTriangulation(0,1);
-  
+  	
 }

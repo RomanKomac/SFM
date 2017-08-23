@@ -74,7 +74,7 @@ bool BundleAdjustment::run(PointCloud_d& pointCloud, vector<Matx34d>& cameraPose
         for (map<int,int>::const_iterator it = p.views.begin(); it != p.views.end(); it++) {
             //it->first  = camera index
             //it->second = 2d feature index
-            Point2f p2f = image2dFeatures[it->first].points[it->second];
+            Point2d p2f = image2dFeatures[it->first].points[it->second];
 
             //subtract center of projection, since the optimizer doesn't know what it is
             p2f.x -= K.at<double>(0, 2);
@@ -99,7 +99,7 @@ bool BundleAdjustment::run(PointCloud_d& pointCloud, vector<Matx34d>& cameraPose
     options.minimizer_progress_to_stdout = true;
     options.max_num_iterations = 500;
     options.eta = 1e-2;
-    options.max_solver_time_in_seconds = 10;
+    options.max_solver_time_in_seconds = 15;
     ceres::LoggingType ltypeInstance;
     ltypeInstance = SILENT;
     options.logging_type = ltypeInstance;

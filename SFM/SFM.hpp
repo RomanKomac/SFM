@@ -33,18 +33,25 @@ class SFM
 		void RANSACfundamental(double reprError, double confidence, int method, int min_inliers);
 		void motionFromFundamental();
 		void initialBundleAdjustment();
-		void additionalBundleAdjustment();
-		void mergePointCloud(const PointCloud_d& cloud);
+		void incrementalBundleAdjustment();
+		void mergePointCloud();
 		void visualizeCameraMotion();
-		void denseReconstruction(int method);
+		void sparseReconstruction();
 		void showEpipolarLines();
 		void showCorrespondences();
+		void retrieveCorrespondences(std::vector<cv::Point3d>& p3d, std::vector<cv::Point2d>& p2d, int ref, int sel);
+		void minThreeViewsConsistency();
+		void triangulationMinThreeViews();
 		void showTriangulation(int i, int j, float max_dist);
+		void bundleAdjustment();
+		void buildNet();
+		void additionalBundleAdjustment();
+		void saveData(std::string fname);
+		void loadData(std::string fname);
 		int avg_num_iters;
 		float avg_runtime;
 	private:
-		std::map<int,int> dependencyNet();
-		void incrementalBundleAdjustment();
+		std::map< int,intPair > dependencyNet();
 		static bool sortMatches(cv::DMatch m1, cv::DMatch m2){
 			return m1.distance < m2.distance;
 		}
@@ -64,6 +71,7 @@ class SFM
 		std::map< intPair,cv::Mat > fundMap;
 		std::map< intPair,cv::Mat > maskMap;
 		std::map< intPair,std::vector< cv::DMatch > > matchMap;
+		std::map< intPair,std::map< int,int > > connectionsMap;
 		cv::Mat K1;
 		cv::Mat K2;
 		bool calibrated;
@@ -71,9 +79,12 @@ class SFM
 		std::vector<double> distort1;
 		std::vector<double> distort2;
 		std::vector< Features_d > mImageFeatures;
-		PointCloud_d             mReconstructionCloud;
-		std::vector<cv::Matx34d> mCameraPoses;
-		std::set<int>            mDoneViews;
-    	std::set<int>            mGoodViews;
+		PointCloud_d              mReconstructionCloud;
+		std::vector<cv::Matx34d>  mCameraPoses;
+		std::vector<bool>         mCameraPosesValid;
+		std::set<int>             mDoneViews;
+    	std::set<int>             mGoodViews;
+    	std::map< int,std::set<int> > consistencies;
+
     	BundleAdjustment ba;
 };

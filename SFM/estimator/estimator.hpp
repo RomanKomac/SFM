@@ -46,6 +46,8 @@ class Estimator
                                 int method, double param1, double param2,
                                 cv::_OutputArray _mask);
 		static cv::Mat triangulateDLT(cv::_InputArray _P1, cv::_InputArray _P2, cv::_InputArray _p1, cv::_InputArray _p2);
+		static void getCorrespondences(PointCloud_d, std::vector<cv::Point3d>& p3d, std::vector<cv::Point2d>& p2d,
+		                               std::map< intPair,std::map< int,int > >& cmap, int from, int to, std::vector< std::vector< cv::KeyPoint > >& keypoints);
 		static bool triangulateViews(std::vector<cv::Point2d> points1, std::vector<cv::Point2d> points2, 
                                  cv::Matx34d Pleft, cv::Matx34d Pright, std::vector<intPair> indxs, intPair pr, cv::Mat K, PointCloud_d& pointCloud);
 		static bool triangulateViews(std::vector<cv::Point2d> points1, std::vector<cv::Point2d> points2, 

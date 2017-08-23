@@ -497,6 +497,32 @@ bool Estimator::triangulateViews(vector<Point2d> points1, vector<Point2d> points
     return nz > 0;
 }
 
+void Estimator::getCorrespondences(PointCloud_d pCloud, vector<Point3d>& p3d, vector<Point2d>& p2d, 
+                                   map< intPair, map< int,int > >& cmap, int from, int to, vector< vector< KeyPoint > >& keypoints){
+    
+    cout << "mRegCLoud size: " << pCloud.size() << endl;
+    for(int i = 0; i < pCloud.size(); i++){
+        map<int, int>::iterator it, it2;
+        if( (it = pCloud[i].views.find(from)) == pCloud[i].views.end() )
+            continue;
+
+
+        map< intPair,map< int,int > >::iterator cit;
+        if( (cit = cmap.find(intPair(from, to))) == cmap.end() )
+            continue;
+
+
+        map< int,int > conmap = cit->second;
+        if( (it2 = conmap.find(it->second)) == conmap.end() )
+            continue;
+
+        //Point in other picture
+        //it2->second
+        p3d.push_back(pCloud[i].p);
+        p2d.push_back(Point2d(keypoints[from][it2->second].pt));
+    }
+}
+
 bool Estimator::triangulateViews(vector<Point2d> points1, vector<Point2d> points2, 
                                  Matx34d Pleft, Matx34d Pright, vector<intPair> indxs, intPair pr, Mat K, PointCloud_d& pointCloud){
 	Mat normalizedLeftPts;
@@ -527,7 +553,7 @@ bool Estimator::triangulateViews(vector<Point2d> points1, vector<Point2d> points
     cout << "points3f: " << points3f.size() << endl;
     for (int l = 0; l < points3f.rows; l++) {
         //check if point reprojection error is small enough
-        if (cv::norm(projectedOnLeft[l]  - points1[l])  > MIN_REPR_ERROR ||
+        if (cv::norm(projectedOnLeft[l]  - points1[l]) > MIN_REPR_ERROR ||
             cv::norm(projectedOnRight[l] - points2[l]) > MIN_REPR_ERROR)
         {
             continue;
